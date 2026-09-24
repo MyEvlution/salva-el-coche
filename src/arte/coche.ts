@@ -64,13 +64,32 @@ function pintarCoche(ctx: CanvasRenderingContext2D, ancho: number): void {
 
   const chapa = ctx.createLinearGradient(0, -0.665, 0, 0);
   chapa.addColorStop(0, c.chapaAlta);
+  chapa.addColorStop(0.55, c.chapaMedia);
   chapa.addColorStop(1, c.chapaBaja);
   ctx.fillStyle = chapa;
   ctx.fill(carroceria);
 
-  // Brillo del techo y pilotos, recortados a la silueta
+  // Todo lo que va pintado sobre la chapa, recortado a la silueta
   ctx.save();
   ctx.clip(carroceria);
+
+  // Cantos oscuros: es lo que hace que la chapa parezca curva y no plana
+  const cantos = ctx.createLinearGradient(-0.5, 0, 0.5, 0);
+  cantos.addColorStop(0, c.cantos);
+  cantos.addColorStop(0.18, c.cantosSuave);
+  cantos.addColorStop(0.82, c.cantosSuave);
+  cantos.addColorStop(1, c.cantos);
+  ctx.fillStyle = cantos;
+  ctx.fillRect(-0.5, -0.67, 1, 0.67);
+
+  // Sombra de los bajos
+  const bajos = ctx.createLinearGradient(0, -0.16, 0, 0);
+  bajos.addColorStop(0, c.bajosSuave);
+  bajos.addColorStop(1, c.bajos);
+  ctx.fillStyle = bajos;
+  ctx.fillRect(-0.5, -0.16, 1, 0.16);
+
+  // Brillo del techo y reflejo largo del hombro
   ctx.fillStyle = c.brilloTecho;
   ctx.beginPath();
   ctx.moveTo(-0.19, -0.665);
@@ -79,15 +98,46 @@ function pintarCoche(ctx: CanvasRenderingContext2D, ancho: number): void {
   ctx.lineTo(-0.21, -0.645);
   ctx.closePath();
   ctx.fill();
+  ctx.fillStyle = c.brilloHombro;
+  ctx.beginPath();
+  ctx.moveTo(-0.44, -0.545);
+  ctx.quadraticCurveTo(-0.36, -0.63, -0.26, -0.652);
+  ctx.lineTo(-0.26, -0.634);
+  ctx.quadraticCurveTo(-0.35, -0.614, -0.425, -0.535);
+  ctx.closePath();
+  ctx.fill();
+
+  // Pilotos: carcasa oscura, lente rojo, ambar, marcha atras y un destello
   for (const lado of [-1, 1]) {
     const x = lado < 0 ? -0.5 : 0.365;
-    ctx.fillStyle = c.piloto;
-    rectRedondeado(ctx, x, -0.565, 0.135, 0.125, 0.035);
+    ctx.fillStyle = c.pilotoCarcasa;
+    rectRedondeado(ctx, x, -0.578, 0.138, 0.268, 0.042);
+    ctx.fill();
+    ctx.fillStyle = c.pilotoLente;
+    rectRedondeado(ctx, x + 0.009, -0.569, 0.12, 0.132, 0.034);
     ctx.fill();
     ctx.fillStyle = c.pilotoAmbar;
-    rectRedondeado(ctx, x, -0.44, 0.135, 0.115, 0.035);
+    rectRedondeado(ctx, x + 0.009, -0.432, 0.12, 0.072, 0.028);
+    ctx.fill();
+    ctx.fillStyle = c.pilotoBlanco;
+    rectRedondeado(ctx, x + (lado < 0 ? 0.052 : 0.009), -0.352, 0.077, 0.03, 0.014);
+    ctx.fill();
+    ctx.fillStyle = c.pilotoBrillo;
+    rectRedondeado(ctx, x + 0.022, -0.556, 0.036, 0.104, 0.018);
     ctx.fill();
   }
+
+  // Junta del porton: el hueco por donde se abre
+  ctx.strokeStyle = c.junta;
+  ctx.lineWidth = 0.006;
+  for (const lado of [-1, 1]) {
+    const x = 0.349 * lado;
+    ctx.beginPath();
+    ctx.moveTo(x, -0.62);
+    ctx.lineTo(x, -0.225);
+    ctx.stroke();
+  }
+
   ctx.restore();
 
   // Aletas negras de los bajos
@@ -98,23 +148,36 @@ function pintarCoche(ctx: CanvasRenderingContext2D, ancho: number): void {
   ctx.fill();
 
   // Luneta trasera
+  const luneta = new Path2D();
+  luneta.moveTo(-0.36, -0.29);
+  luneta.lineTo(-0.325, -0.55);
+  luneta.quadraticCurveTo(-0.315, -0.59, -0.27, -0.59);
+  luneta.lineTo(0.27, -0.59);
+  luneta.quadraticCurveTo(0.315, -0.59, 0.325, -0.55);
+  luneta.lineTo(0.36, -0.29);
+  luneta.quadraticCurveTo(0, -0.27, -0.36, -0.29);
+  luneta.closePath();
+
   const cristal = ctx.createLinearGradient(-0.3, -0.59, 0.3, -0.29);
   cristal.addColorStop(0, c.lunetaAlta);
   cristal.addColorStop(0.55, c.lunetaMedia);
   cristal.addColorStop(1, c.lunetaBaja);
   ctx.fillStyle = cristal;
-  ctx.beginPath();
-  ctx.moveTo(-0.36, -0.29);
-  ctx.lineTo(-0.325, -0.55);
-  ctx.quadraticCurveTo(-0.315, -0.59, -0.27, -0.59);
-  ctx.lineTo(0.27, -0.59);
-  ctx.quadraticCurveTo(0.315, -0.59, 0.325, -0.55);
-  ctx.lineTo(0.36, -0.29);
-  ctx.quadraticCurveTo(0, -0.27, -0.36, -0.29);
-  ctx.closePath();
-  ctx.fill();
+  ctx.fill(luneta);
+
   ctx.save();
-  ctx.clip();
+  ctx.clip(luneta);
+  // Lineas del desempanador
+  ctx.strokeStyle = c.desempanador;
+  ctx.lineWidth = 0.007;
+  for (let i = 0; i < 6; i++) {
+    const y = -0.555 + i * 0.048;
+    ctx.beginPath();
+    ctx.moveTo(-0.36, y);
+    ctx.lineTo(0.36, y);
+    ctx.stroke();
+  }
+  // Reflejos del cristal
   ctx.fillStyle = c.reflejoFuerte;
   ctx.beginPath();
   ctx.moveTo(-0.28, -0.59);
@@ -133,13 +196,22 @@ function pintarCoche(ctx: CanvasRenderingContext2D, ancho: number): void {
   ctx.fill();
   ctx.restore();
 
-  // Limpiaparabrisas trasero
+  // Goma que sujeta la luneta
+  ctx.strokeStyle = c.goma;
+  ctx.lineWidth = 0.016;
+  ctx.stroke(luneta);
+
+  // Limpiaparabrisas trasero, con su pivote
   ctx.strokeStyle = c.limpia;
-  ctx.lineWidth = 0.012;
+  ctx.lineWidth = 0.014;
   ctx.beginPath();
   ctx.moveTo(-0.09, -0.315);
   ctx.quadraticCurveTo(0.05, -0.375, 0.22, -0.345);
   ctx.stroke();
+  ctx.fillStyle = c.limpia;
+  ctx.beginPath();
+  ctx.ellipse(-0.092, -0.312, 0.022, 0.018, 0, 0, TAU);
+  ctx.fill();
 
   // Emblema
   ctx.fillStyle = c.emblema;
@@ -178,8 +250,14 @@ function pintarCoche(ctx: CanvasRenderingContext2D, ancho: number): void {
   rectRedondeado(ctx, 0.12, -0.245, 0.1, 0.012, 0.006);
   ctx.fill();
 
-  // Paragolpes con catadioptricos
-  ctx.fillStyle = c.paragolpes;
+  // Paragolpes: la junta con la chapa, el plastico y su brillo de arriba
+  ctx.fillStyle = c.paragolpesJunta;
+  rectRedondeado(ctx, -0.483, -0.217, 0.966, 0.127, 0.052);
+  ctx.fill();
+  const plastico = ctx.createLinearGradient(0, -0.21, 0, -0.09);
+  plastico.addColorStop(0, c.paragolpes);
+  plastico.addColorStop(1, c.paragolpesBajo);
+  ctx.fillStyle = plastico;
   rectRedondeado(ctx, -0.48, -0.21, 0.96, 0.12, 0.05);
   ctx.fill();
   ctx.fillStyle = c.paragolpesBrillo;
@@ -191,7 +269,10 @@ function pintarCoche(ctx: CanvasRenderingContext2D, ancho: number): void {
   rectRedondeado(ctx, 0.36, -0.165, 0.07, 0.02, 0.008);
   ctx.fill();
 
-  // Matricula generica
+  // Matricula, hundida en su hueco
+  ctx.fillStyle = c.matriculaReceso;
+  rectRedondeado(ctx, -0.181, -0.089, 0.362, 0.088, 0.012);
+  ctx.fill();
   ctx.fillStyle = c.matricula;
   rectRedondeado(ctx, -0.17, -0.078, 0.34, 0.066, 0.008);
   ctx.fill();

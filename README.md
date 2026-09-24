@@ -90,14 +90,22 @@ nunca se hace es meter en el motor una constante de un nivel.
 
 - **La dificultad depende de los puntos, no del reloj**: quien juega despacio
   no sale castigado.
+- **El que esta a punto de llegar avisa**: se le marca con un halo que
+  parpadea y la pantalla se tine de rojo por los bordes, cada vez mas fuerte
+  (`AJUSTES.aviso`). Con `prefers-reduced-motion` el parpadeo se queda quieto.
+- **Cada monstruo abatido deja una mancha en el suelo** que se seca en unos
+  segundos (`AJUSTES.manchas`): se ve por donde ha pasado la pelea.
+- **La pistola se dibuja con escorzo** (`AJUSTES.pistola.escorzo`): el dibujo
+  se comprime a lo largo del canon, asi que no se ve de perfil sino apuntando
+  hacia dentro de la pantalla, con la empunadura vertical.
 - **Margen de perdon al disparar** (`AJUSTES.disparo.gracia`): si el toque no
   cae dentro del monstruo pero se queda cerca, cuenta. Con el pulgar, exigir
   precision de raton es lo que hace que un juego se sienta injusto.
 - **El coche, el monstruo y la pistola se pintan una vez** en canvas aparte y
   luego solo se copian: es de donde sale el margen para ir a 60 fps en un
   movil modesto.
-- **Las particulas salen de un deposito fijo**: nada de reservar y tirar
-  memoria mientras se juega.
+- **Las particulas y las manchas salen de depositos fijos**: nada de reservar
+  y tirar memoria mientras se juega.
 - **El juego se pausa solo** al pasar a segundo plano, y baja la resolucion si
   los frames se alargan.
 - La mejor marca se guarda en `localStorage`; si el navegador no deja, el juego

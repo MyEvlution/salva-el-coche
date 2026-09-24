@@ -20,10 +20,22 @@ export const COLOR = {
   },
 
   coche: {
-    chapaAlta: '#DE3B3E',
-    chapaBaja: '#BE1F27',
-    brilloTecho: 'rgba(255, 255, 255, 0.14)',
+    chapaAlta: '#E8484A',
+    chapaMedia: '#D0292F',
+    chapaBaja: '#A81920',
+    brilloTecho: 'rgba(255, 255, 255, 0.16)',
+    brilloHombro: 'rgba(255, 255, 255, 0.1)',
+    /** Oscurecido de los cantos: es lo que hace que la chapa parezca curva. */
+    cantos: 'rgba(24, 6, 10, 0.34)',
+    cantosSuave: 'rgba(24, 6, 10, 0)',
+    bajos: 'rgba(12, 6, 8, 0.5)',
+    bajosSuave: 'rgba(12, 6, 8, 0)',
+    junta: 'rgba(18, 8, 10, 0.55)',
     piloto: '#C42B27',
+    pilotoCarcasa: '#7C1714',
+    pilotoLente: '#E2453A',
+    pilotoBrillo: 'rgba(255, 255, 255, 0.4)',
+    pilotoBlanco: '#C2CBD1',
     pilotoAmbar: '#F0A03C',
     aleta: '#1D2126',
     lunetaAlta: '#4E6074',
@@ -31,6 +43,9 @@ export const COLOR = {
     lunetaBaja: '#22262D',
     reflejoFuerte: 'rgba(190, 212, 230, 0.22)',
     reflejoSuave: 'rgba(190, 212, 230, 0.12)',
+    /** Goma de la luneta y lineas del desempanador. */
+    goma: '#0D1014',
+    desempanador: 'rgba(196, 216, 232, 0.07)',
     limpia: '#0E1013',
     emblema: '#C9CED4',
     pegatina: '#F29A55',
@@ -38,12 +53,15 @@ export const COLOR = {
     aleron: '#1B1E22',
     frenoBase: '#A8231C',
     frenoLuz: '#E2493B',
-    paragolpes: '#23272C',
-    paragolpesBrillo: '#343A41',
+    paragolpes: '#2B3036',
+    paragolpesBajo: '#1A1E23',
+    paragolpesBrillo: '#3D444C',
+    paragolpesJunta: 'rgba(10, 12, 15, 0.55)',
     catadioptrico: '#D63A2C',
     matricula: '#F1F4F6',
     matriculaBanda: '#2B57A6',
     matriculaTinta: '#20242A',
+    matriculaReceso: 'rgba(0, 0, 0, 0.38)',
     rotulo: '#E9EEF2',
   },
 
@@ -80,6 +98,9 @@ export const COLOR = {
     trazador: '255, 168, 96',
     acierto: '232, 116, 59',
     fallo: '255, 255, 255',
+    /** Rastro de los abatidos y aviso de peligro, en triplete para el alfa. */
+    mancha: '38, 24, 16',
+    aviso: '214, 58, 44',
   },
 } as const;
 

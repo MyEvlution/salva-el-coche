@@ -19,8 +19,19 @@ export const AJUSTES = {
   horizonte: 0.4, // fraccion de la altura
   /** Caja del coche: abajo a la izquierda. */
   coche: { izquierda: 0.02, derecha: 0.55, anchoMaximo: 520 },
-  /** Caja de la pistola: abajo a la derecha, lejos del pulgar izquierdo. */
-  pistola: { izquierda: 0.7, derecha: 0.985, altoMaximo: 0.46 },
+  /**
+   * Caja de la pistola: abajo a la derecha, lejos del pulgar izquierdo.
+   * `escorzo` comprime el dibujo a lo largo del canon para que la pistola
+   * parezca que apunta hacia dentro de la pantalla y no de perfil.
+   */
+  pistola: {
+    izquierda: 0.7,
+    derecha: 0.985,
+    altoMaximo: 0.52,
+    escorzo: 0.62,
+    /** Cuanto se inclina la pistola hacia el punto tocado: 1 = apunta del todo. */
+    seguimiento: 0.55,
+  },
 
   /** Proyeccion pseudo-3D: los monstruos convergen hacia el coche. */
   proyeccion: {
@@ -38,6 +49,26 @@ export const AJUSTES = {
     gracia: 1.45,
     /** Segundos entre disparos: evita el ametrallamiento accidental. */
     cadencia: 0.09,
+  },
+
+  /** Rastro que deja un monstruo abatido en el suelo. */
+  manchas: {
+    maximo: 28,
+    duracion: 6.5,
+    alfa: 0.42,
+    /** Radio de la mancha en unidades locales del monstruo. */
+    radio: 70,
+  },
+
+  /** Aviso cuando un monstruo esta a punto de llegar al coche. */
+  aviso: {
+    /** Avance a partir del cual el monstruo se marca como peligro. */
+    umbral: 0.78,
+    /** Parpadeos por segundo. */
+    parpadeo: 4.5,
+    /** Opacidad maxima del borde rojo de la pantalla. */
+    alfaBorde: 0.5,
+    grosorHalo: 5,
   },
 
   /** Efectos */

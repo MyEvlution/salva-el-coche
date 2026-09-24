@@ -15,12 +15,16 @@ import { TAU, rectRedondeado } from './formas';
 /** Punto de agarre, en coordenadas locales del dibujo. */
 const PIVOTE = { x: 880, y: 230 };
 
-/** Angulo de reposo: apuntando hacia donde vienen los monstruos. */
-export const ANGULO_REPOSO = 0.68;
+/**
+ * Angulo de reposo. Con el escorzo aplicado, la empunadura queda casi
+ * vertical: la postura con la que se sujeta una pistola de verdad, no
+ * ladeada.
+ */
+export const ANGULO_REPOSO = 0.36;
 
-/** Limites de giro para que la mano no haga cosas raras. */
-const ANGULO_MINIMO = 0.12;
-const ANGULO_MAXIMO = 1.15;
+/** Limites de giro para que la muneca no acabe en una postura imposible. */
+const ANGULO_MINIMO = 0.05;
+const ANGULO_MAXIMO = 0.95;
 
 /** Puntos extremos que deben caber en la zona reservada a la pistola. */
 const EXTREMOS: ReadonlyArray<readonly [number, number]> = [
@@ -58,12 +62,13 @@ export class Pistola {
   rehacer(ancho: number, alto: number, dpr: number): void {
     const cos = Math.cos(ANGULO_REPOSO);
     const sin = Math.sin(ANGULO_REPOSO);
+    const escorzo = AJUSTES.pistola.escorzo;
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
     let maxY = -Infinity;
     for (const [ex, ey] of EXTREMOS) {
-      const rx = ex - PIVOTE.x;
+      const rx = (ex - PIVOTE.x) * escorzo;
       const ry = ey - PIVOTE.y;
       const wx = rx * cos - ry * sin;
       const wy = rx * sin + ry * cos;
@@ -92,7 +97,7 @@ export class Pistola {
     const haciaAtrasY = Math.sin(angulo);
     const px = this.pivoteX + haciaAtrasX * retroceso * 30 * this.ganancia;
     const py = this.pivoteY + haciaAtrasY * retroceso * 30 * this.ganancia;
-    const rx = -PIVOTE.x * this.ganancia;
+    const rx = -PIVOTE.x * this.ganancia * AJUSTES.pistola.escorzo;
     const ry = -PIVOTE.y * this.ganancia;
     destino.px = px;
     destino.py = py;
@@ -130,7 +135,7 @@ export class Pistola {
     const g = this.ganancia;
 
     // Manguera azul con muelle: sale del racor y cuelga hasta el borde
-    const lx = (443 - PIVOTE.x) * g;
+    const lx = (443 - PIVOTE.x) * g * AJUSTES.pistola.escorzo;
     const ly = (520 - PIVOTE.y) * g;
     const hx = ox + lx * cos - ly * sin;
     const hy = oy + lx * sin + ly * cos;
@@ -149,7 +154,9 @@ export class Pistola {
     ctx.save();
     ctx.translate(ox, oy);
     ctx.rotate(angulo);
-    ctx.scale(g, g);
+    // El escorzo comprime el dibujo a lo largo del canon: la pistola deja de
+    // verse de perfil y parece que apunta hacia dentro de la pantalla.
+    ctx.scale(g * AJUSTES.pistola.escorzo, g);
     ctx.translate(-PIVOTE.x, -PIVOTE.y);
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
@@ -331,15 +338,15 @@ function pintarPistola(ctx: CanvasRenderingContext2D): void {
   ctx.font = `700 30px ${TIPOGRAFIA_ESTRECHA}`;
   ctx.fillText(TEXTOS.arte.pistolaModelo, 735, 44);
 
-  // Gatillo
+  // Gatillo. Va mas grueso de lo que parece: el escorzo lo estrecha.
   ctx.strokeStyle = p.verdeOscuro;
-  ctx.lineWidth = 46;
+  ctx.lineWidth = 62;
   ctx.beginPath();
   ctx.moveTo(650, -20);
   ctx.bezierCurveTo(640, 80, 690, 180, 745, 235);
   ctx.stroke();
   ctx.strokeStyle = p.verdeGatillo;
-  ctx.lineWidth = 32;
+  ctx.lineWidth = 44;
   ctx.beginPath();
   ctx.moveTo(650, -20);
   ctx.bezierCurveTo(640, 80, 690, 180, 745, 235);

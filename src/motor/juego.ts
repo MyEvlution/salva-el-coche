@@ -1,5 +1,6 @@
 import { AJUSTES } from '../config/ajustes';
 import { COLOR } from '../config/tema';
+import { Aviso } from '../arte/aviso';
 import { Coche } from '../arte/coche';
 import { Fondo } from '../arte/fondo';
 import { MONSTRUO_LOCAL, Monstruo, aperturaNormal } from '../arte/monstruo';
@@ -7,6 +8,7 @@ import { ANGULO_REPOSO, Pistola, type PuntaPistola } from '../arte/pistola';
 import { TAU, conAlfa } from '../arte/formas';
 import { Audio } from './audio';
 import { Lienzo } from './lienzo';
+import { Manchas } from './manchas';
 import { Particulas } from './particulas';
 import { calcularGeometria, proyectar, type Geometria } from './geometria';
 import type { DefinicionNivel, Enemigo2D, Escena, Proyeccion, Rampa } from './tipos';
@@ -53,6 +55,8 @@ export class Juego {
   private readonly monstruo = new Monstruo();
   private readonly pistola = new Pistola();
   private readonly particulas = new Particulas();
+  private readonly manchas = new Manchas();
+  private readonly aviso = new Aviso();
 
   private readonly enemigos: Enemigo2D[] = [];
   private readonly trazadores: Trazador[] = [];
@@ -140,6 +144,7 @@ export class Juego {
     this.fogonazo = 0;
     this.cuentaAtrasAparicion = this.nivel.dificultad.respiroInicial;
     this.particulas.limpiar();
+    this.manchas.limpiar();
     for (const e of this.enemigos) e.vivo = false;
     for (const t of this.trazadores) t.activo = false;
     for (const a of this.anillos) a.activo = false;
@@ -180,6 +185,7 @@ export class Juego {
     this.geometria = calcularGeometria(this.lienzo.ancho, this.lienzo.alto);
     const { dpr } = this.lienzo;
     this.fondo.rehacer(this.ctx, this.geometria);
+    this.aviso.rehacer(this.ctx, this.geometria);
     this.coche.rehacer(this.geometria.coche.ancho, dpr);
     this.monstruo.rehacer(this.geometria.escalaMaxima, dpr);
     this.pistola.rehacer(this.geometria.ancho, this.geometria.alto, dpr);
@@ -250,7 +256,7 @@ export class Juego {
     this.desdeDisparo = 0;
 
     const apuntado = this.pistola.anguloHacia(x, y, this.punta);
-    this.anguloPistola = ANGULO_REPOSO + (apuntado - ANGULO_REPOSO) * 0.7;
+    this.anguloPistola = ANGULO_REPOSO + (apuntado - ANGULO_REPOSO) * AJUSTES.pistola.seguimiento;
     this.sujecion = 0.14;
     this.retroceso = 1;
 
@@ -355,6 +361,7 @@ export class Juego {
       );
     }
 
+    this.manchas.emitir(pr.x, pr.y, pr.escala * AJUSTES.manchas.radio);
     enemigo.vivo = false;
     this.puntos++;
     this.congelado = AJUSTES.golpeSeco;
@@ -446,6 +453,7 @@ export class Juego {
     }
 
     this.particulas.actualizar(dt);
+    this.manchas.actualizar(dt);
 
     for (const t of this.trazadores) {
       if (!t.activo) continue;
@@ -475,6 +483,7 @@ export class Juego {
     const g = this.geometria;
 
     this.fondo.dibujar(ctx, g);
+    this.manchas.dibujar(ctx);
 
     // De lejos a cerca, para que los de delante tapen a los de detras.
     const lista = this.ordenados;
@@ -502,6 +511,27 @@ export class Juego {
         anda,
         this.reloj,
       );
+    }
+
+    // Aviso: el que esta a punto de llegar se marca, y la pantalla avisa
+    let peligro = 0;
+    if (this.escena === 'jugando') {
+      const latido = Aviso.latido(this.reloj, this.movimientoReducido);
+      for (const e of lista) {
+        const intensidad = Aviso.intensidad(e.avance);
+        if (intensidad <= 0) continue;
+        peligro = Math.max(peligro, intensidad);
+        const pr = proyectar(g, e, this.proyeccion);
+        this.aviso.halo(
+          ctx,
+          pr.x,
+          pr.y + MONSTRUO_LOCAL.centroY * pr.escala,
+          pr.escala * MONSTRUO_LOCAL.radioX,
+          pr.escala * MONSTRUO_LOCAL.radioY,
+          intensidad,
+          latido,
+        );
+      }
     }
 
     const enDerrota = this.escena === 'derrota';
@@ -542,6 +572,10 @@ export class Juego {
 
     this.particulas.dibujar(ctx);
     this.dibujarDisparos(ctx);
+
+    if (peligro > 0) {
+      this.aviso.bordePantalla(ctx, g, peligro, Aviso.latido(this.reloj, this.movimientoReducido));
+    }
   }
 
   private dibujarDisparos(ctx: CanvasRenderingContext2D): void {
