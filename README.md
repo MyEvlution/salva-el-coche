@@ -98,6 +98,13 @@ nunca se hace es meter en el motor una constante de un nivel.
 - **La pistola se dibuja con escorzo** (`AJUSTES.pistola.escorzo`): el dibujo
   se comprime a lo largo del canon, asi que no se ve de perfil sino apuntando
   hacia dentro de la pantalla, con la empunadura vertical.
+- **El volumen se hace con degradados, no con colores planos.** Cada pieza de
+  la pistola tiene su claro / medio / oscuro en `COLOR.pistola`, y encima van
+  los cantos, la arista de luz y la sombra recortados a la silueta: la misma
+  tecnica que la chapa del coche.
+- **Los dedos del guante no son cuatro trazos iguales.** Cada uno es una
+  cresta curva con valle, lomo y reflejo, y asoma lo suyo por delante del
+  puno; con crestas identicas la mano parecia el muelle de la manguera.
 - **Margen de perdon al disparar** (`AJUSTES.disparo.gracia`): si el toque no
   cae dentro del monstruo pero se queda cerca, cuenta. Con el pulgar, exigir
   precision de raton es lo que hace que un juego se sienta injusto.

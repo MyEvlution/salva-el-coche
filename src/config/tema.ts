@@ -65,32 +65,65 @@ export const COLOR = {
     rotulo: '#E9EEF2',
   },
 
+  /**
+   * La pistola de aire del taller: fundicion verde militar, acero, laton y
+   * un guante de nitrilo negro. Cada pieza tiene claro / medio / oscuro
+   * porque el volumen se hace con degradados, igual que en el coche.
+   */
   pistola: {
-    verde: '#3E4A34',
-    verdeClaro: '#57664A',
-    verdeOscuro: '#252C20',
-    verdeGatillo: '#46533C',
-    acero: '#B9BEC2',
-    aceroMedio: '#A5ABB1',
-    aceroOscuro: '#7E848A',
-    aceroClaro: '#DDE1E4',
-    tornillo: '#5C6166',
-    laton: '#C9A24A',
-    latonClaro: '#E6C872',
-    latonOscuro: '#8F6F2C',
-    guante: '#111316',
-    guanteBrillo: '#2B3036',
+    verdeAlto: '#5E6E4F',
+    verdeMedio: '#414E38',
+    verdeBajo: '#212819',
+    /** Oscurecido de los cantos: hace que la fundicion parezca redonda. */
+    verdeCanto: 'rgba(8, 12, 6, 0.45)',
+    verdeCantoSuave: 'rgba(8, 12, 6, 0)',
+    verdeArista: 'rgba(216, 228, 198, 0.22)',
+    verdeJunta: 'rgba(8, 11, 6, 0.5)',
+
+    aceroAlto: '#E6EAED',
+    aceroMedio: '#AFB6BC',
+    aceroBajo: '#6C737A',
+    aceroSombra: '#474D53',
+    moleteadoOscuro: 'rgba(38, 44, 50, 0.6)',
+    moleteadoClaro: 'rgba(255, 255, 255, 0.26)',
+
+    latonAlto: '#F2D687',
+    latonMedio: '#C7A04A',
+    latonBajo: '#7C5E22',
+
+    anilloAlto: '#EE6B5E',
+    anilloMedio: '#CE362C',
+    anilloBajo: '#8A1C16',
+
+    /** Piezas negras: tuerca de union, gatillo, boquilla. */
+    negroAlto: '#343A40',
+    negroMedio: '#1B1F23',
+    negroBajo: '#0A0C0E',
+
+    /** Nitrilo: casi negro, pero con un brillo frio muy marcado. */
+    guanteAlto: '#2F363D',
+    guanteMedio: '#171B1F',
+    guanteBajo: '#07090B',
+    guanteBrillo: 'rgba(202, 220, 238, 0.16)',
+    guanteBrilloSuave: 'rgba(202, 220, 238, 0)',
+    /** Reflejo especular: es lo que delata que el guante es de goma. */
+    guanteReflejo: 'rgba(216, 232, 248, 0.26)',
+    guantePliegue: 'rgba(0, 0, 0, 0.5)',
+
+    mangueraAlta: '#5CA3E6',
     manguera: '#2F7BD0',
-    muelle: '#6E7378',
-    anilloRojo: '#D3342B',
-    anilloRojoClaro: '#E8574D',
-    boquillaOscura: '#15181B',
-    producto: '#6B4A1E',
-    productoBrillo: 'rgba(224, 170, 90, 0.75)',
-    grabado: 'rgba(207, 214, 190, 0.9)',
-    brillo: 'rgba(255, 255, 255, 0.14)',
-    brilloGuante: 'rgba(255, 255, 255, 0.07)',
-    sombra: 'rgba(0, 0, 0, 0.25)',
+    mangueraBaja: '#1A4E8C',
+    muelle: '#9AA1A7',
+
+    /** Grasa de taller sobre la fundicion. */
+    aceite: 'rgba(88, 66, 24, 0.45)',
+    aceiteBrillo: 'rgba(240, 208, 132, 0.5)',
+
+    grabado: 'rgba(198, 208, 180, 0.72)',
+    grabadoHueco: 'rgba(0, 0, 0, 0.45)',
+    tornillo: '#5C6166',
+    /** Sombra de contacto entre piezas. */
+    ocluido: 'rgba(0, 0, 0, 0.38)',
   },
 
   efectos: {
