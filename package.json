@@ -1,0 +1,17 @@
+{
+  "name": "salva-el-coche",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Juego 2D para navegador: defiende el coche de los monstruos del oxido",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "comprobar": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vite": "^7.3.6"
+  }
+}
