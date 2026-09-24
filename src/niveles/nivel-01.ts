@@ -18,16 +18,22 @@ export const NIVEL_01: DefinicionNivel = {
   objetivo: { tipo: 'puntos', cantidad: 100 },
   derrota: { tipo: 'alcanzaObjetivoProtegido' },
 
-  // La dificultad sube con cada monstruo abatido, no con el reloj: el que
-  // juega despacio no sale castigado. `suavizado` por encima de 1 deja la
-  // primera mitad tranquila y apreta cerca del final.
+  // La dificultad sube con cada monstruo abatido, no con el reloj: no hay
+  // cuenta atras ni limite de tiempo, la partida acaba al llegar a 100.
+  //
+  // Los numeros estan calculados para que una partida seguida dure unos 40
+  // segundos: 30 monstruos en los primeros 20 segundos y los 70 restantes en
+  // los otros 20, subiendo poco a poco y sin escalones. De 0.8 apariciones
+  // por segundo al empezar se pasa a 3.75, y con la probabilidad de aparicion
+  // doble eso son algo mas de 5 monstruos por segundo al final. Ademas cruzan
+  // cada vez mas rapido: de 5 segundos a 1.8.
   dificultad: {
-    recorrido: { inicio: 9, fin: 4.6 },
-    aparicion: { inicio: 2.3, fin: 0.85 },
-    simultaneos: { inicio: 3, fin: 7 },
+    recorrido: { inicio: 5, fin: 1.8 },
+    ritmo: { inicio: 0.8, fin: 3.75 },
+    simultaneos: { inicio: 5, fin: 14 },
     aparicionDoble: { inicio: 0, fin: 0.35 },
     variacion: 0.22,
-    suavizado: 1.15,
+    suavizado: 0.75,
     respiroInicial: 0.8,
   },
 

@@ -12,8 +12,12 @@ export interface Rampa {
 export interface CurvaDificultad {
   /** Segundos que tarda un monstruo en cruzar desde el horizonte. */
   recorrido: Rampa;
-  /** Segundos entre apariciones. */
-  aparicion: Rampa;
+  /**
+   * Apariciones por segundo. Se interpola la frecuencia y no el intervalo
+   * entre apariciones: interpolar el intervalo hace que la mitad de la
+   * partida vaya mucho mas lenta de lo que dicen `inicio` y `fin`.
+   */
+  ritmo: Rampa;
   /** Monstruos permitidos a la vez. */
   simultaneos: Rampa;
   /** Probabilidad (0-1) de que una aparicion traiga dos monstruos. */
@@ -22,7 +26,8 @@ export interface CurvaDificultad {
   variacion: number;
   /**
    * Forma de la subida de dificultad. 1 = lineal; por encima de 1 el nivel
-   * se mantiene amable al principio y aprieta al final.
+   * se mantiene amable al principio y aprieta al final; por debajo de 1
+   * aprieta antes y luego sube mas despacio.
    */
   suavizado: number;
   /** Segundos de margen antes de la primera aparicion. */

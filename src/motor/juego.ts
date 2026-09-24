@@ -419,7 +419,7 @@ export class Juego {
         if (Math.random() < this.rampa(this.nivel.dificultad.aparicionDoble) && this.vivos < simultaneos) {
           this.aparecer();
         }
-        this.cuentaAtrasAparicion = this.variar(this.rampa(this.nivel.dificultad.aparicion));
+        this.cuentaAtrasAparicion = this.variar(1 / this.rampa(this.nivel.dificultad.ritmo));
       }
 
       for (const e of this.enemigos) {

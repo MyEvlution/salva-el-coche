@@ -89,7 +89,14 @@ nunca se hace es meter en el motor una constante de un nivel.
 ## Decisiones que conviene conocer
 
 - **La dificultad depende de los puntos, no del reloj**: quien juega despacio
-  no sale castigado.
+  no sale castigado. No hay cuenta atras ni limite de tiempo; la partida
+  termina al llegar al objetivo. Los numeros del nivel 1 estan calculados para
+  que una partida seguida dure unos 40 segundos —30 monstruos en los primeros
+  20 y los 70 restantes en los otros 20—, subiendo poco a poco: mas apariciones
+  por segundo y monstruos que cruzan cada vez mas rapido.
+- **`ritmo` son apariciones por segundo, no segundos entre apariciones.** Se
+  interpola la frecuencia porque interpolar el intervalo deja la mitad de la
+  partida mucho mas lenta de lo que dicen `inicio` y `fin`.
 - **El que esta a punto de llegar avisa**: se le marca con un halo que
   parpadea y la pantalla se tine de rojo por los bordes, cada vez mas fuerte
   (`AJUSTES.aviso`). Con `prefers-reduced-motion` el parpadeo se queda quieto.
