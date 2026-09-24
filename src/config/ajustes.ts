@@ -71,6 +71,13 @@ export const AJUSTES = {
     grosorHalo: 5,
   },
 
+  /**
+   * Modo infinito: la dificultad sigue subiendo sin techo, pero el motor
+   * necesita un suelo. Por debajo de este recorrido el monstruo cruza antes
+   * de que de tiempo a verlo, asi que no es dificultad: es una pantalla rota.
+   */
+  infinito: { recorridoMinimo: 1.2 },
+
   /** Efectos */
   particulas: {
     maximo: 220,

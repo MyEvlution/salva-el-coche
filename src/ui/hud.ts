@@ -12,6 +12,7 @@ export class Hud {
   private readonly relleno: HTMLDivElement;
   private readonly meta: HTMLParagraphElement;
   private ultimoPuntaje = -1;
+  private ultimoInfinito = false;
 
   constructor(contenedor: HTMLElement, alPulsarPausa: () => void) {
     this.raiz = document.createElement('div');
@@ -51,11 +52,18 @@ export class Hud {
   }
 
   actualizar(datos: DatosPartida, animar: boolean): void {
-    if (datos.puntos !== this.ultimoPuntaje) {
+    if (datos.puntos !== this.ultimoPuntaje || datos.infinito !== this.ultimoInfinito) {
       this.ultimoPuntaje = datos.puntos;
-      this.marcador.textContent = String(datos.puntos);
+      this.ultimoInfinito = datos.infinito;
+      // Pasado el objetivo el marcador lo ensena: 101/100, 102/100...
+      this.marcador.textContent = datos.infinito
+        ? `${datos.puntos}/${datos.objetivo}`
+        : String(datos.puntos);
+      this.marcador.classList.toggle('hud__marcador--fraccion', datos.infinito);
       this.relleno.style.transform = `scaleX(${Math.min(1, datos.puntos / datos.objetivo)})`;
-      this.meta.textContent = `${TEXTOS.hud.objetivo} ${datos.objetivo}`;
+      this.meta.textContent = datos.infinito
+        ? TEXTOS.hud.infinito
+        : `${TEXTOS.hud.objetivo} ${datos.objetivo}`;
       if (animar) {
         this.marcador.classList.remove('hud__marcador--golpe');
         // Forzar el reinicio de la animacion sin recrear el elemento.

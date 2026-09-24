@@ -15,6 +15,7 @@ export const TEXTOS = {
     pausa: 'Pausa',
     etiquetaPausa: 'Pausar la partida',
     objetivo: 'Objetivo',
+    infinito: 'Modo infinito',
   },
 
   pausa: {
@@ -26,7 +27,9 @@ export const TEXTOS = {
   victoria: {
     titulo: 'Coche salvado',
     cuerpo: 'Has aguantado hasta el final: ni un mordisco a la chapa.',
-    accion: 'Jugar otra vez',
+    salir: 'Salir al inicio',
+    infinito: 'Modo infinito',
+    avisoInfinito: 'Modo infinito: sin objetivo y sin techo, vienen cada vez mas y mas rapido.',
   },
 
   derrota: {

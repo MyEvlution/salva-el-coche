@@ -91,9 +91,15 @@ nunca se hace es meter en el motor una constante de un nivel.
 - **La dificultad depende de los puntos, no del reloj**: quien juega despacio
   no sale castigado. No hay cuenta atras ni limite de tiempo; la partida
   termina al llegar al objetivo. Los numeros del nivel 1 estan calculados para
-  que una partida seguida dure unos 40 segundos —30 monstruos en los primeros
-  20 y los 70 restantes en los otros 20—, subiendo poco a poco: mas apariciones
-  por segundo y monstruos que cruzan cada vez mas rapido.
+  que una partida seguida dure unos 70 segundos —30 monstruos en la primera
+  mitad y los 70 restantes en la segunda—, subiendo poco a poco: mas
+  apariciones por segundo y monstruos que cruzan cada vez mas rapido.
+- **Modo infinito**: al ganar se puede seguir jugando sin objetivo. El
+  progreso deja de topar en 1, asi que las mismas rampas se extrapolan y la
+  dificultad no para de subir; el marcador pasa a contar `101/100`, `102/100`.
+  El motor conserva dos suelos que no son dificultad sino cordura:
+  `AJUSTES.infinito.recorridoMinimo` (por debajo, el monstruo cruza antes de
+  que de tiempo a verlo) y el tamano del deposito de enemigos.
 - **`ritmo` son apariciones por segundo, no segundos entre apariciones.** Se
   interpola la frecuencia porque interpolar el intervalo deja la mitad de la
   partida mucho mas lenta de lo que dicen `inicio` y `fin`.

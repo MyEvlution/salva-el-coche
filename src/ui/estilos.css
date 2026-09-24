@@ -90,6 +90,11 @@ body {
   color: var(--tinta);
 }
 
+/* "101/100" no cabe con el mismo cuerpo que "42". */
+.hud__marcador--fraccion {
+  font-size: clamp(24px, 5.6vmin, 44px);
+}
+
 .hud__marcador--golpe {
   animation: golpe 0.16s ease-out;
 }

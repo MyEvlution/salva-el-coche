@@ -23,6 +23,8 @@ export interface DatosPartida {
   puntos: number;
   objetivo: number;
   mejor: number;
+  /** En modo infinito el objetivo ya esta pasado y no hay final. */
+  infinito: boolean;
 }
 
 interface Trazador {
@@ -69,6 +71,7 @@ export class Juego {
 
   private escena: Escena = 'inicio';
   private puntos = 0;
+  private infinito = false;
   private mejor = 0;
   private reloj = 0;
   private cuentaAtrasAparicion = 0;
@@ -118,7 +121,12 @@ export class Juego {
   }
 
   get datos(): DatosPartida {
-    return { puntos: this.puntos, objetivo: this.nivel.objetivo.cantidad, mejor: this.mejor };
+    return {
+      puntos: this.puntos,
+      objetivo: this.nivel.objetivo.cantidad,
+      mejor: this.mejor,
+      infinito: this.infinito,
+    };
   }
 
   get escenaActual(): Escena {
@@ -128,7 +136,36 @@ export class Juego {
   // ---------------------------------------------------------------- escenas
 
   empezar(): void {
+    this.reiniciarEstado();
+    this.cambiarEscena('jugando');
+  }
+
+  /** Vuelve a la portada. La marca ya se guardo al ganar. */
+  salirAlInicio(): void {
+    this.reiniciarEstado();
+    this.prepararEscaparate();
+    this.cambiarEscena('inicio');
+  }
+
+  /**
+   * Sigue jugando pasado el objetivo. El progreso deja de topar en 1, asi que
+   * las rampas se extrapolan y la dificultad no para de subir.
+   */
+  seguirSinLimite(): void {
+    if (this.escena !== 'victoria') return;
+    this.infinito = true;
+    this.tiempoVictoria = 0;
+    this.avisadoFinal = false;
+    // Pantalla limpia: la pausa de la victoria corta el ritmo, y reanudar con
+    // un monstruo a un palmo del coche seria una derrota regalada.
+    for (const e of this.enemigos) e.vivo = false;
+    this.cuentaAtrasAparicion = this.nivel.dificultad.respiroInicial;
+    this.cambiarEscena('jugando');
+  }
+
+  private reiniciarEstado(): void {
     this.puntos = 0;
+    this.infinito = false;
     this.reloj = 0;
     this.desdeDisparo = 99;
     this.congelado = 0;
@@ -148,7 +185,6 @@ export class Juego {
     for (const e of this.enemigos) e.vivo = false;
     for (const t of this.trazadores) t.activo = false;
     for (const a of this.anillos) a.activo = false;
-    this.cambiarEscena('jugando');
   }
 
   alternarPausa(): void {
@@ -194,14 +230,30 @@ export class Juego {
 
   // ------------------------------------------------------------ dificultad
 
-  /** 0 al empezar el nivel, 1 al alcanzar el objetivo. */
+  /**
+   * 0 al empezar el nivel, 1 al alcanzar el objetivo. En modo infinito no se
+   * queda en 1: sigue creciendo y las rampas se extrapolan mas alla de `fin`.
+   */
   private get progreso(): number {
-    const t = this.puntos / this.nivel.objetivo.cantidad;
-    return Math.pow(Math.min(1, Math.max(0, t)), this.nivel.dificultad.suavizado);
+    const t = Math.max(0, this.puntos / this.nivel.objetivo.cantidad);
+    return Math.pow(this.infinito ? t : Math.min(1, t), this.nivel.dificultad.suavizado);
   }
 
   private rampa(r: Rampa): number {
     return r.inicio + (r.fin - r.inicio) * this.progreso;
+  }
+
+  /** Segundos de recorrido, con el suelo que el modo infinito necesita. */
+  private get recorrido(): number {
+    return Math.max(
+      AJUSTES.infinito.recorridoMinimo,
+      this.rampa(this.nivel.dificultad.recorrido),
+    );
+  }
+
+  /** Monstruos permitidos a la vez, sin pasarse del deposito. */
+  private get simultaneos(): number {
+    return Math.min(MAX_ENEMIGOS, Math.round(this.rampa(this.nivel.dificultad.simultaneos)));
   }
 
   private variar(valor: number): number {
@@ -245,7 +297,7 @@ export class Juego {
       }
       if (libre) break;
     }
-    this.despertar(x0, 0, this.variar(this.rampa(this.nivel.dificultad.recorrido)), Math.random() * TAU);
+    this.despertar(x0, 0, this.variar(this.recorrido), Math.random() * TAU);
   }
 
   // ---------------------------------------------------------------- disparo
@@ -369,7 +421,7 @@ export class Juego {
     vibrar(AJUSTES.vibracion.acierto);
     this.oyentes.alPuntuar(this.datos);
 
-    if (this.puntos >= this.nivel.objetivo.cantidad) this.ganar();
+    if (!this.infinito && this.puntos >= this.nivel.objetivo.cantidad) this.ganar();
   }
 
   private ganar(): void {
@@ -413,7 +465,7 @@ export class Juego {
 
     if (this.escena === 'jugando') {
       this.cuentaAtrasAparicion -= dt;
-      const simultaneos = Math.round(this.rampa(this.nivel.dificultad.simultaneos));
+      const simultaneos = this.simultaneos;
       if (this.cuentaAtrasAparicion <= 0 && this.vivos < simultaneos) {
         this.aparecer();
         if (Math.random() < this.rampa(this.nivel.dificultad.aparicionDoble) && this.vivos < simultaneos) {

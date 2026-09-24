@@ -88,8 +88,15 @@ function mostrarEscena(escena: Escena, datos: DatosPartida): void {
       pantallas.mostrar({
         titulo: TEXTOS.victoria.titulo,
         cuerpo: TEXTOS.victoria.cuerpo,
-        detalle: mejorTexto(datos),
-        acciones: [{ texto: TEXTOS.victoria.accion, alPulsar: () => juego.empezar() }],
+        detalle: TEXTOS.victoria.avisoInfinito,
+        acciones: [
+          { texto: TEXTOS.victoria.salir, alPulsar: () => juego.salirAlInicio() },
+          {
+            texto: TEXTOS.victoria.infinito,
+            alPulsar: () => juego.seguirSinLimite(),
+            secundaria: true,
+          },
+        ],
       });
       break;
 
@@ -106,6 +113,8 @@ function mostrarEscena(escena: Escena, datos: DatosPartida): void {
 
 function marcadorTexto(datos: DatosPartida): string {
   const nombre = datos.puntos === 1 ? TEXTOS.marcador.abatidoUno : TEXTOS.marcador.abatidosVarios;
+  // Pasado el objetivo, "de 100" sobra: el numero ya lo dice todo.
+  if (datos.infinito) return `${datos.puntos} ${nombre}`;
   return `${datos.puntos} ${nombre} ${TEXTOS.marcador.de} ${datos.objetivo}`;
 }
 
