@@ -8,7 +8,8 @@ export const TEXTOS = {
 
   inicio: {
     accion: 'Jugar',
-    ayuda: 'Toca un monstruo para dispararle',
+    nivelAnterior: 'Nivel anterior',
+    nivelSiguiente: 'Nivel siguiente',
   },
 
   hud: {
@@ -24,10 +25,12 @@ export const TEXTOS = {
     reiniciar: 'Empezar de nuevo',
   },
 
+  /** Vuelta a la portada, que es donde se elige el nivel. */
+  salir: 'Salir al inicio',
+
   victoria: {
     titulo: 'Coche salvado',
     cuerpo: 'Has aguantado hasta el final: ni un mordisco a la chapa.',
-    salir: 'Salir al inicio',
     infinito: 'Modo infinito',
     avisoInfinito: 'Modo infinito: sin objetivo y sin techo, vienen cada vez mas y mas rapido.',
   },

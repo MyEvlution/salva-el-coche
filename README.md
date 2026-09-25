@@ -57,7 +57,7 @@ src/
 │   ├── particulas.ts deposito fijo de particulas
 │   └── tipos.ts     los contratos, incluido `DefinicionNivel`
 ├── arte/            dibujo procedural, cacheado en canvas aparte
-│   ├── coche.ts  fondo.ts  formas.ts  monstruo.ts  pistola.ts
+│   ├── coche.ts  fondo.ts  formas.ts  garaje.ts  monstruo.ts  pistola.ts
 ├── niveles/         los niveles, que son datos
 │   ├── indice.ts    registro de niveles
 │   └── nivel-01.ts  nivel 1
@@ -94,6 +94,15 @@ nunca se hace es meter en el motor una constante de un nivel.
   que una partida seguida dure unos 70 segundos —30 monstruos en la primera
   mitad y los 70 restantes en la segunda—, subiendo poco a poco: mas
   apariciones por segundo y monstruos que cruzan cada vez mas rapido.
+- **La portada es el taller**, no la partida: el mismo coche rojo aparcado
+  dentro del garaje (`arte/garaje.ts`). Es una pantalla entera cacheada, asi
+  que se suelta al salir de la portada y se rehace al volver: guardarla
+  mientras se juega seria memoria tirada.
+- **El selector de nivel se dibuja solo** a partir de `NIVELES`. La flecha que
+  no lleva a ningun sitio no se pinta pero deja su hueco, para que el nombre
+  no baile. Con un nivel no sale ninguna; en cuanto se registre el segundo,
+  saldra la derecha en el primero y la izquierda en el ultimo sin tocar la
+  interfaz.
 - **Modo infinito**: al ganar se puede seguir jugando sin objetivo. El
   progreso deja de topar en 1, asi que las mismas rampas se extrapolan y la
   dificultad no para de subir; el marcador pasa a contar `101/100`, `102/100`.

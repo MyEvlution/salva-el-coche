@@ -1,6 +1,7 @@
 import { AJUSTES } from '../config/ajustes';
 import { COLOR } from '../config/tema';
 import { Aviso } from '../arte/aviso';
+import { Garaje, cocheEnGaraje } from '../arte/garaje';
 import { Coche } from '../arte/coche';
 import { Fondo } from '../arte/fondo';
 import { MONSTRUO_LOCAL, Monstruo, aperturaNormal } from '../arte/monstruo';
@@ -59,6 +60,7 @@ export class Juego {
   private readonly particulas = new Particulas();
   private readonly manchas = new Manchas();
   private readonly aviso = new Aviso();
+  private readonly garaje = new Garaje();
 
   private readonly enemigos: Enemigo2D[] = [];
   private readonly trazadores: Trazador[] = [];
@@ -96,7 +98,7 @@ export class Juego {
 
   constructor(
     private readonly lienzo: Lienzo,
-    private readonly nivel: DefinicionNivel,
+    private nivel: DefinicionNivel,
     private readonly audio: Audio,
     private readonly oyentes: OyentesJuego,
   ) {
@@ -117,7 +119,6 @@ export class Juego {
     this.mejor = leerMejorMarca();
     lienzo.alCambiar(() => this.rehacer());
     this.rehacer();
-    this.prepararEscaparate();
   }
 
   get datos(): DatosPartida {
@@ -140,10 +141,19 @@ export class Juego {
     this.cambiarEscena('jugando');
   }
 
-  /** Vuelve a la portada. La marca ya se guardo al ganar. */
+  /**
+   * Vuelve a la portada, que es donde se elige el nivel. La marca ya se
+   * guardo al ganar o al perder.
+   */
   salirAlInicio(): void {
     this.reiniciarEstado();
-    this.prepararEscaparate();
+    this.cambiarEscena('inicio');
+  }
+
+  /** Cambia de nivel. Solo desde la portada: a medias no significa nada. */
+  seleccionarNivel(nivel: DefinicionNivel): void {
+    if (this.escena !== 'inicio' || nivel === this.nivel) return;
+    this.nivel = nivel;
     this.cambiarEscena('inicio');
   }
 
@@ -203,16 +213,12 @@ export class Juego {
   }
 
   private cambiarEscena(escena: Escena): void {
+    const anterior = this.escena;
     this.escena = escena;
+    // El taller solo hace falta en la portada, y ocupa una pantalla entera.
+    if (escena === 'inicio') this.garaje.rehacer(this.geometria, this.lienzo.dpr);
+    else if (anterior === 'inicio') this.garaje.liberar();
     this.oyentes.alCambiarEscena(escena, this.datos);
-  }
-
-  /** Dos monstruos de adorno para la pantalla de inicio. */
-  private prepararEscaparate(): void {
-    const { ancho } = this.geometria;
-    for (const e of this.enemigos) e.vivo = false;
-    this.despertar(ancho * 0.16, 0.66, 1, 1.1);
-    this.despertar(ancho * 0.72, 0.54, 1, 3.4);
   }
 
   // ------------------------------------------------------------- redimension
@@ -225,7 +231,7 @@ export class Juego {
     this.coche.rehacer(this.geometria.coche.ancho, dpr);
     this.monstruo.rehacer(this.geometria.escalaMaxima, dpr);
     this.pistola.rehacer(this.geometria.ancho, this.geometria.alto, dpr);
-    if (this.escena === 'inicio') this.prepararEscaparate();
+    if (this.escena === 'inicio') this.garaje.rehacer(this.geometria, dpr);
   }
 
   // ------------------------------------------------------------ dificultad
@@ -533,6 +539,14 @@ export class Juego {
     if (this.escena === 'pausa') return;
     const ctx = this.ctx;
     const g = this.geometria;
+
+    // La portada no es la partida: es el coche aparcado en el taller.
+    if (this.escena === 'inicio') {
+      this.garaje.dibujar(ctx);
+      const sitio = cocheEnGaraje(g);
+      this.coche.dibujar(ctx, sitio.x, sitio.base);
+      return;
+    }
 
     this.fondo.dibujar(ctx, g);
     this.manchas.dibujar(ctx);

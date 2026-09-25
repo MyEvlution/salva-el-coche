@@ -6,8 +6,8 @@ import { Bucle } from './motor/bucle';
 import { Entrada } from './motor/entrada';
 import { Juego, type DatosPartida } from './motor/juego';
 import { Lienzo } from './motor/lienzo';
-import { PRIMER_NIVEL } from './niveles/indice';
-import type { Escena } from './motor/tipos';
+import { NIVELES, PRIMER_NIVEL } from './niveles/indice';
+import type { DefinicionNivel, Escena } from './motor/tipos';
 import { Hud } from './ui/hud';
 import { Pantallas } from './ui/pantallas';
 
@@ -17,7 +17,15 @@ if (!(contenedor instanceof HTMLElement) || !(canvas instanceof HTMLCanvasElemen
   throw new Error('Falta el contenedor del juego en el HTML');
 }
 
-const nivel = PRIMER_NIVEL;
+/**
+ * Nivel seleccionado en la portada. Las flechas se dibujan solas segun lo
+ * que haya en `NIVELES`: con un solo nivel no sale ninguna, y en cuanto se
+ * registre el segundo apareceran la derecha en el primero y la izquierda en
+ * el ultimo, sin tocar esta pantalla.
+ */
+let indiceNivel = 0;
+const nivelActual = (): DefinicionNivel => NIVELES[indiceNivel] as DefinicionNivel;
+
 const lienzo = new Lienzo(canvas);
 const audio = new Audio();
 const pantallas = new Pantallas(contenedor);
@@ -26,7 +34,7 @@ let juego: Juego;
 
 const hud = new Hud(contenedor, () => juego.alternarPausa());
 
-juego = new Juego(lienzo, nivel, audio, {
+juego = new Juego(lienzo, PRIMER_NIVEL, audio, {
   alCambiarEscena: (escena, datos) => mostrarEscena(escena, datos),
   alPuntuar: (datos) => hud.actualizar(datos, true),
 });
@@ -67,9 +75,16 @@ function mostrarEscena(escena: Escena, datos: DatosPartida): void {
     case 'inicio':
       pantallas.mostrar({
         titulo: TEXTOS.titulo,
-        cuerpo: nivel.descripcion,
-        detalle: TEXTOS.inicio.ayuda,
+        variante: 'portada',
+        cuerpo: nivelActual().descripcion,
         acciones: [{ texto: TEXTOS.inicio.accion, alPulsar: () => juego.empezar() }],
+        selector: {
+          etiqueta: nivelActual().nombre,
+          etiquetaAnterior: TEXTOS.inicio.nivelAnterior,
+          etiquetaSiguiente: TEXTOS.inicio.nivelSiguiente,
+          alAnterior: indiceNivel > 0 ? () => cambiarNivel(-1) : null,
+          alSiguiente: indiceNivel < NIVELES.length - 1 ? () => cambiarNivel(1) : null,
+        },
       });
       break;
 
@@ -80,6 +95,7 @@ function mostrarEscena(escena: Escena, datos: DatosPartida): void {
         acciones: [
           { texto: TEXTOS.pausa.reanudar, alPulsar: () => juego.reanudar() },
           { texto: TEXTOS.pausa.reiniciar, alPulsar: () => juego.empezar(), secundaria: true },
+          { texto: TEXTOS.salir, alPulsar: () => juego.salirAlInicio(), secundaria: true },
         ],
       });
       break;
@@ -90,7 +106,7 @@ function mostrarEscena(escena: Escena, datos: DatosPartida): void {
         cuerpo: TEXTOS.victoria.cuerpo,
         detalle: TEXTOS.victoria.avisoInfinito,
         acciones: [
-          { texto: TEXTOS.victoria.salir, alPulsar: () => juego.salirAlInicio() },
+          { texto: TEXTOS.salir, alPulsar: () => juego.salirAlInicio() },
           {
             texto: TEXTOS.victoria.infinito,
             alPulsar: () => juego.seguirSinLimite(),
@@ -105,10 +121,20 @@ function mostrarEscena(escena: Escena, datos: DatosPartida): void {
         titulo: TEXTOS.derrota.titulo,
         cuerpo: marcadorTexto(datos),
         detalle: mejorTexto(datos),
-        acciones: [{ texto: TEXTOS.derrota.accion, alPulsar: () => juego.empezar() }],
+        acciones: [
+          { texto: TEXTOS.derrota.accion, alPulsar: () => juego.empezar() },
+          { texto: TEXTOS.salir, alPulsar: () => juego.salirAlInicio(), secundaria: true },
+        ],
       });
       break;
   }
+}
+
+function cambiarNivel(paso: number): void {
+  const siguiente = indiceNivel + paso;
+  if (siguiente < 0 || siguiente >= NIVELES.length) return;
+  indiceNivel = siguiente;
+  juego.seleccionarNivel(nivelActual());
 }
 
 function marcadorTexto(datos: DatosPartida): string {

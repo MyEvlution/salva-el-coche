@@ -8,11 +8,27 @@ export interface AccionPantalla {
   secundaria?: boolean;
 }
 
+/**
+ * Selector de nivel: una caja del tamano de un boton con una flecha a cada
+ * lado. La flecha que no lleva a ningun sitio no se dibuja, pero deja su
+ * hueco, para que el nombre del nivel no se descoloque.
+ */
+export interface SelectorPantalla {
+  etiqueta: string;
+  etiquetaAnterior: string;
+  etiquetaSiguiente: string;
+  alAnterior: (() => void) | null;
+  alSiguiente: (() => void) | null;
+}
+
 export interface ContenidoPantalla {
   titulo: string;
   cuerpo?: string;
   detalle?: string;
   acciones: AccionPantalla[];
+  selector?: SelectorPantalla;
+  /** `portada` deja ver el escenario: velo suave y tarjeta arriba. */
+  variante?: 'portada';
 }
 
 export class Pantallas {
@@ -67,7 +83,9 @@ export class Pantallas {
       boton.addEventListener('click', accion.alPulsar);
       this.botonera.appendChild(boton);
     }
+    if (contenido.selector) this.botonera.appendChild(crearSelector(contenido.selector));
 
+    this.velo.classList.toggle('velo--portada', contenido.variante === 'portada');
     this.velo.classList.add('velo--visible');
     const primero = this.botonera.firstElementChild;
     if (primero instanceof HTMLElement) primero.focus({ preventScroll: true });
@@ -76,4 +94,36 @@ export class Pantallas {
   ocultar(): void {
     this.velo.classList.remove('velo--visible');
   }
+}
+
+function crearSelector(selector: SelectorPantalla): HTMLDivElement {
+  const caja = document.createElement('div');
+  caja.className = 'selector';
+
+  const flecha = (signo: string, etiqueta: string, alPulsar: (() => void) | null): HTMLElement => {
+    if (!alPulsar) {
+      const hueco = document.createElement('span');
+      hueco.className = 'selector__hueco';
+      hueco.setAttribute('aria-hidden', 'true');
+      return hueco;
+    }
+    const boton = document.createElement('button');
+    boton.type = 'button';
+    boton.className = 'selector__flecha';
+    boton.textContent = signo;
+    boton.setAttribute('aria-label', etiqueta);
+    boton.addEventListener('click', alPulsar);
+    return boton;
+  };
+
+  const nombre = document.createElement('span');
+  nombre.className = 'selector__nivel';
+  nombre.textContent = selector.etiqueta;
+
+  caja.append(
+    flecha('\u2039', selector.etiquetaAnterior, selector.alAnterior),
+    nombre,
+    flecha('\u203A', selector.etiquetaSiguiente, selector.alSiguiente),
+  );
+  return caja;
 }
