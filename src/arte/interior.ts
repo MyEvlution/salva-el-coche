@@ -1,5 +1,6 @@
 import { AJUSTES } from '../config/ajustes';
 import { lienzoCache } from '../motor/lienzo';
+import { estampar } from './emblema';
 import interiorColorUrl from '../assets/interior.jpg';
 import interiorMascaraUrl from '../assets/interior-mascara.png';
 import volanteColorUrl from '../assets/volante.jpg';
@@ -36,6 +37,15 @@ const EJE = { x: 456, y: 832 };
 
 /** Lado del recorte del volante y radio de su llanta, en pixeles del dibujo. */
 const VOLANTE = { lado: 552, radio: 268 };
+
+/**
+ * Los dos sitios del interior donde sale la marca del fabricante, en fraccion
+ * del dibujo que los lleva: el centro del volante —dentro de su recorte, asi
+ * que gira con el— y la chapita del salpicadero, achatada porque se ve de
+ * canto. Se tapan con el emblema propio (`arte/emblema.ts`).
+ */
+const EMBLEMA_VOLANTE = { x: 0.5018, y: 0.529, ancho: 0.1123, alto: 0.1341 };
+const EMBLEMA_SALPICADERO = { x: 0.7768, y: 0.4092, ancho: 0.041, alto: 0.0195 };
 
 /** Donde cae el interior en la pantalla y que medidas deja para la partida. */
 export interface Colocacion {
@@ -121,12 +131,14 @@ export class Interior {
     const fondo = lienzoCache(ancho, alto, this.dpr);
     fondo.ctx.imageSmoothingQuality = 'high';
     fondo.ctx.drawImage(this.salpicadero, 0, 0, ancho, alto);
+    estampar(fondo.ctx, EMBLEMA_SALPICADERO, ancho, alto, this.dpr);
     this.cacheSalpicadero = fondo.canvas;
 
     this.ladoVolante = VOLANTE.lado * c.escala;
     const rueda = lienzoCache(this.ladoVolante, this.ladoVolante, this.dpr);
     rueda.ctx.imageSmoothingQuality = 'high';
     rueda.ctx.drawImage(this.volante, 0, 0, this.ladoVolante, this.ladoVolante);
+    estampar(rueda.ctx, EMBLEMA_VOLANTE, this.ladoVolante, this.ladoVolante, this.dpr);
     this.cacheVolante = rueda.canvas;
   }
 

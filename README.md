@@ -301,9 +301,17 @@ nuevo, en cambio, no es un nivel: es un motor pequeno mas, como
   que lee quien juega, no lo que lee quien programa. Volver a tener dos idiomas
   seria duplicar `config/textos.ts` y dos cadenas por nivel, y elegir cual se
   carga; hoy no hace falta y no se ha montado nada para ello.
-- **Los dibujos llevan marcas reales.** El coche, la pistola y el interior
-  salen de fotografias e ilustraciones aportadas por el autor, y en ellas se
-  leen un logotipo de Peugeot, un distintivo «107», el rotulo de un taller con
-  su telefono y un «SLIM COMBAT» en la pistola. Para jugar en local da igual;
-  **antes de publicar el juego hay que decidir que se hace con ellos**, porque
-  no son marcas propias.
+- **El emblema del fabricante esta tapado con uno propio** (`arte/emblema.ts`).
+  Los dibujos son fotografias de un coche de verdad y traian puesta la marca
+  del fabricante en tres sitios: el porton, el centro del volante y la chapita
+  del salpicadero. Como el juego se publica, en los tres se pinta encima un
+  escudo cromado con la silueta del monstruo del juego, del mismo tamano y en
+  el mismo sitio: se sigue leyendo como la chapa de una marca, pero no es la de
+  nadie. Va pintado sobre el cache y **no dentro del archivo de imagen**, para
+  no volver a codificar los dibujos; cuesta tres canvas pequenos por cambio de
+  tamano de pantalla y cero por frame. En el volante va dentro de su recorte,
+  asi que gira con el.
+- **El rotulo del taller si se queda**: «SUVO Autoservice», «Undervognstunellen»
+  y su telefono son del dueno del coche, no de un tercero, y estan a proposito.
+  Siguen a la vista tambien el distintivo del modelo en el porton y el
+  «SLIM COMBAT» de la pistola.

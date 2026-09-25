@@ -113,6 +113,21 @@ export const COLOR = {
     manguera: '#2F7BD0',
   },
 
+  /**
+   * El emblema propio con el que se tapa la marca del fabricante en los tres
+   * sitios donde sale. Cromado: claro arriba, oscuro abajo, tinta alrededor.
+   */
+  emblema: {
+    alto: '#F3F5F6',
+    medio: '#B7C0C7',
+    bajo: '#6C7881',
+    contorno: '#0E1318',
+    filo: 'rgba(255, 255, 255, 0.92)',
+    filoSuave: 'rgba(255, 255, 255, 0)',
+    figura: '#171C21',
+    figuraAlta: '#4A555F',
+  },
+
   /** Marcas viales del nivel 2. Pintura gastada, no blanco de rotulador. */
   conduccion: {
     linea: 'rgba(228, 233, 234, 0.72)',
