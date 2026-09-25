@@ -58,7 +58,8 @@ src/
 │   └── tipos.ts     los contratos, incluido `DefinicionNivel`
 ├── arte/            dibujo procedural, cacheado en canvas aparte
 │   ├── assets/   coche.webp  pistola.webp
-│   ├── coche.ts  fondo.ts  formas.ts  garaje.ts  monstruo.ts  pistola.ts
+│   ├── coche.ts  estilo.ts  fondo.ts  formas.ts
+│   ├── garaje.ts  monstruo.ts  pistola.ts
 ├── niveles/         los niveles, que son datos
 │   ├── indice.ts    registro de niveles
 │   └── nivel-01.ts  nivel 1
@@ -95,10 +96,32 @@ nunca se hace es meter en el motor una constante de un nivel.
   que una partida seguida dure unos 70 segundos —30 monstruos en la primera
   mitad y los 70 restantes en la segunda—, subiendo poco a poco: mas
   apariciones por segundo y monstruos que cruzan cada vez mas rapido.
+- **Todo el juego habla el idioma de los dos dibujos** (`arte/estilo.ts`):
+  contorno de tinta alrededor de la silueta, volumen por degradado, filo de
+  luz frio en el canto de arriba, grano de suciedad encima y los bordes de la
+  pantalla cerrados por una vineta. Los numeros estan en `AJUSTES.estilo` y
+  los colores, por piezas —claro / base / oscuro—, en `config/tema.ts`.
+  **Nada de eso se pinta por frame**: todo vive dentro de los canvas de cache,
+  que se rehacen solo al cambiar el tamano de la pantalla. Rehacerlos todos de
+  golpe cuesta menos de un frame (pico de 18 ms al redimensionar).
+- **El contorno no es un trazo**. Una silueta hecha de partes solapadas —el
+  monstruo son una bezier y doce circulos— tiene bordes *por dentro*, y
+  trazarla dibuja tambien esos: sale una cadena de anillos. Se rellena la
+  misma forma doce veces alrededor y se mete por detras de lo pintado
+  (`destination-over`), asi que solo asoma por fuera. El filo de luz tiene el
+  mismo problema y la misma solucion: se recorta la silueta, se pinta la luz y
+  se vuelve a tapar con la propia silueta bajada unos pixeles.
+- **Los monstruos de lejos van sin remates** (`AJUSTES.estilo.detalle`): la
+  sombra de cada colmillo, el brillo del iris o la segunda sombra de contacto
+  no se distinguen a ese tamano, y de lejos es cuando mas hay en pantalla.
+- **El grano cae siempre en el mismo sitio**: sale de un xorshift con semilla
+  fija (`sembrar`). Con `Math.random` la suciedad del asfalto se movería al
+  girar el movil, que es justo lo que delata que esta pintada.
 - **El coche y la pistola son imagenes**, no vectores: los dibujos del taller
   (`src/assets/`). Salen de dos PNG de 1448x1086 recortados a su contenido,
   reducidos y pasados a **WebP**: 306 kB los dos, frente a 2,45 MB en PNG.
-  El monstruo, el escenario y el taller siguen siendo vectores.
+  El monstruo, el escenario y el taller siguen siendo vectores, pintados con
+  el mismo acabado para que no se note la costura.
 - **Las dos imagenes se reducen una sola vez** a un canvas del tamano bueno y
   por frame solo se copian. Filtrar una imagen de 1000 px en cada frame
   disparaba el p95 de 17 a 93 ms; cacheada vuelve a 21.

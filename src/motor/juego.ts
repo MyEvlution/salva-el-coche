@@ -245,7 +245,7 @@ export class Juego {
   private rehacer(): void {
     this.geometria = calcularGeometria(this.lienzo.ancho, this.lienzo.alto);
     const { dpr } = this.lienzo;
-    this.fondo.rehacer(this.ctx, this.geometria);
+    this.fondo.rehacer(this.geometria, dpr);
     this.aviso.rehacer(this.ctx, this.geometria);
     this.coche.rehacer(this.geometria.coche.ancho, dpr);
     this.monstruo.rehacer(this.geometria.escalaMaxima, dpr);
@@ -587,7 +587,7 @@ export class Juego {
       return;
     }
 
-    this.fondo.dibujar(ctx, g);
+    this.fondo.dibujar(ctx);
     this.manchas.dibujar(ctx);
 
     // De lejos a cerca, para que los de delante tapen a los de detras.

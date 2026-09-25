@@ -1,14 +1,19 @@
 /* Interfaz del juego. El canvas pinta la partida; esto es lo de alrededor. */
 
 :root {
-  --cielo: #7393aa;
+  /* Mismo idioma que los dibujos: chapa oscura, filo de luz arriba, tinta
+     alrededor y el naranja del juego como unico color vivo. */
+  --cielo: #3f5668;
   --tinta: #f4f8fc;
-  --tinta-suave: #c9d8e4;
-  --velo: rgba(14, 26, 38, 0.62);
-  --tarjeta: rgba(20, 34, 48, 0.86);
+  --tinta-suave: #c3d2de;
+  --velo: rgba(10, 18, 26, 0.66);
+  --tarjeta: rgba(24, 33, 41, 0.9);
+  --tarjeta-alta: rgba(44, 58, 70, 0.92);
   --naranja: #e8743b;
+  --naranja-alto: #ff9a5e;
   --naranja-claro: #ffb48a;
-  --borde: rgba(255, 255, 255, 0.14);
+  --borde: rgba(8, 12, 16, 0.8);
+  --filo: rgba(200, 218, 230, 0.28);
   --tipografia: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui,
     sans-serif;
   --arriba: env(safe-area-inset-top, 0px);
@@ -79,7 +84,8 @@ body {
   gap: 6px;
   padding: 6px 18px 9px;
   border-radius: 22px;
-  background: rgba(14, 26, 38, 0.3);
+  background: linear-gradient(to bottom, rgba(44, 58, 70, 0.42), rgba(12, 18, 24, 0.42));
+  box-shadow: inset 0 1px 0 var(--filo);
 }
 
 .hud__marcador {
@@ -120,7 +126,7 @@ body {
   width: 100%;
   height: 100%;
   border-radius: 3px;
-  background: var(--naranja);
+  background: linear-gradient(to bottom, var(--naranja-alto), var(--naranja));
   transform: scaleX(0);
   transform-origin: left center;
   transition: transform 0.18s ease-out;
@@ -143,7 +149,8 @@ body {
   height: 46px;
   border: 0;
   border-radius: 14px;
-  background: rgba(14, 26, 38, 0.3);
+  background: linear-gradient(to bottom, rgba(44, 58, 70, 0.42), rgba(12, 18, 24, 0.42));
+  box-shadow: inset 0 1px 0 var(--filo);
   color: var(--tinta);
   font-size: 15px;
   line-height: 1;
@@ -194,7 +201,7 @@ body {
 }
 
 .velo--portada .tarjeta {
-  background: rgba(20, 34, 48, 0.78);
+  background: linear-gradient(to bottom, rgba(44, 58, 70, 0.86), rgba(24, 33, 41, 0.82));
 }
 
 .tarjeta {
@@ -203,7 +210,9 @@ body {
   padding: clamp(18px, 4vmin, 30px);
   border: 1px solid var(--borde);
   border-radius: 22px;
-  background: var(--tarjeta);
+  /* Chapa: clara arriba, oscura abajo, con el filo de luz en el canto */
+  background: linear-gradient(to bottom, var(--tarjeta-alta), var(--tarjeta));
+  box-shadow: inset 0 1px 0 var(--filo), 0 18px 40px rgba(6, 10, 14, 0.45);
   text-align: center;
   overflow-y: auto;
   transform: translateY(10px) scale(0.98);
@@ -247,9 +256,10 @@ body {
 .boton {
   min-height: 56px;
   padding: 0 24px;
-  border: 0;
+  border: 1px solid var(--borde);
   border-radius: 16px;
-  background: var(--naranja);
+  background: linear-gradient(to bottom, var(--naranja-alto), var(--naranja));
+  box-shadow: inset 0 1px 0 rgba(255, 233, 214, 0.55), 0 6px 16px rgba(6, 10, 14, 0.35);
   color: #1a0f08;
   font-family: inherit;
   font-size: clamp(16px, 3.6vmin, 20px);
@@ -280,6 +290,8 @@ body {
   padding: 0 7px;
   border: 1px solid var(--borde);
   border-radius: 16px;
+  background: linear-gradient(to bottom, rgba(58, 72, 84, 0.5), rgba(20, 28, 35, 0.5));
+  box-shadow: inset 0 1px 0 var(--filo);
 }
 
 .selector__nivel {
@@ -322,7 +334,7 @@ body {
 }
 
 .boton--secundario {
-  background: transparent;
+  background: linear-gradient(to bottom, rgba(58, 72, 84, 0.5), rgba(20, 28, 35, 0.5));
   border: 1px solid var(--borde);
   color: var(--tinta-suave);
   font-weight: 700;

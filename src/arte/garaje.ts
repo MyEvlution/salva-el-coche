@@ -1,12 +1,16 @@
+import { AJUSTES } from '../config/ajustes';
 import { COLOR } from '../config/tema';
 import { lienzoCache } from '../motor/lienzo';
 import type { Geometria } from '../motor/geometria';
 import { TAU, rectRedondeado } from './formas';
+import { entintar, granular, vinetear } from './estilo';
+import { pintarCalle } from './fondo';
 
 /**
  * El taller de la portada: el coche rojo aparcado dentro, antes de que
- * empiece la faena. Mismo lenguaje que el resto del juego —formas planas y
- * degradados para el volumen— y el coche es literalmente el mismo dibujo.
+ * empiece la faena. Mismo lenguaje que el resto del juego —volumen por
+ * degradado, contorno de tinta y grano encima— y el coche es literalmente el
+ * mismo dibujo.
  *
  * La escena no se mueve, asi que se pinta una vez en un canvas aparte y por
  * frame solo se copia. Al salir de la portada se suelta: guardar una pantalla
@@ -102,6 +106,17 @@ function pintarPorton(ctx: CanvasRenderingContext2D, ancho: number, alto: number
   }
   ctx.stroke();
 
+  // Un filo claro bajo cada junta: asi las lamas tienen canto y no son rayas
+  ctx.strokeStyle = c.portonFilo;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let i = 1; i < lamas; i++) {
+    const y = (alto * i) / lamas + 1.5;
+    ctx.moveTo(ancho * 0.04, y);
+    ctx.lineTo(ancho * 0.96, y);
+  }
+  ctx.stroke();
+
   ctx.fillStyle = c.portonTirador;
   const tirador = ancho * 0.18;
   rectRedondeado(ctx, (ancho - tirador) / 2, alto * 0.74, tirador, Math.max(7, alto * 0.04), 5);
@@ -141,6 +156,8 @@ function pintarGaraje(ctx: CanvasRenderingContext2D, g: Geometria): void {
   }
   ctx.stroke();
 
+  granular(ctx, 0, techo, ancho, suelo - techo, [c.granoPared], AJUSTES.estilo.grano.densidadPared, 0x7c3a1d);
+
   // Zocalo
   const zocalo = (suelo - techo) * 0.3;
   ctx.fillStyle = c.zocalo;
@@ -152,16 +169,15 @@ function pintarGaraje(ctx: CanvasRenderingContext2D, g: Geometria): void {
   // Detras de la hoja esta la calle: el cielo y el asfalto del nivel, que es
   // de donde van a salir los monstruos en cuanto el porton suba.
   const hueco = cajaPorton(g);
-  // Mismo cielo y mismo asfalto que la partida, con su linea de horizonte:
-  // asi el hueco se lee como la calle y no como un panel claro.
-  const horizonte = hueco.y + hueco.alto * 0.5;
-  ctx.fillStyle = COLOR.escenario.cielo;
-  ctx.fillRect(hueco.x, hueco.y, hueco.ancho, horizonte - hueco.y);
-  const asfalto = ctx.createLinearGradient(0, horizonte, 0, hueco.y + hueco.alto);
-  asfalto.addColorStop(0, COLOR.escenario.sueloAlto);
-  asfalto.addColorStop(1, COLOR.escenario.sueloBajo);
-  ctx.fillStyle = asfalto;
-  ctx.fillRect(hueco.x, horizonte, hueco.ancho, hueco.y + hueco.alto - horizonte);
+  // Por el hueco se ve la calle de verdad: la pinta el mismo modulo que el
+  // fondo de la partida, asi que lo que aparece al subir el porton es
+  // exactamente el escenario que viene despues.
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(hueco.x, hueco.y, hueco.ancho, hueco.alto);
+  ctx.clip();
+  pintarCalle(ctx, hueco.x, hueco.y, hueco.ancho, hueco.alto, hueco.y + hueco.alto * 0.5);
+  ctx.restore();
   // Sombra del dintel, para que el hueco tenga fondo
   const dintel = ctx.createLinearGradient(0, hueco.y, 0, hueco.y + hueco.alto * 0.3);
   dintel.addColorStop(0, c.sombra);
@@ -221,6 +237,8 @@ function pintarGaraje(ctx: CanvasRenderingContext2D, g: Geometria): void {
     ctx.fill();
   }
 
+  granular(ctx, 0, suelo, ancho, fondo, [c.granoSuelo, c.sueloMancha], AJUSTES.estilo.grano.densidadPared, 0x11a7f3);
+
   // Rejilla del foso, en perspectiva: se abre hacia el que mira
   const arriba = alto * 0.78;
   const ax = ancho * 0.19;
@@ -266,10 +284,18 @@ function pintarGaraje(ctx: CanvasRenderingContext2D, g: Geometria): void {
   const nr = Math.min(ancho * 0.055, fondo * 0.12);
   const nBase = suelo + fondo * 0.19;
   for (let i = 0; i < 3; i++) {
+    const cy = nBase - i * nr * 0.5;
+    const goma = new Path2D();
+    goma.ellipse(nx, cy, nr, nr * 0.58, 0, 0, TAU);
     ctx.fillStyle = c.neumatico;
+    ctx.fill(goma);
+    entintar(ctx, goma, c.contorno, Math.max(1.5, nr * AJUSTES.estilo.contorno * 2));
+    // Filo de luz en el canto de arriba de cada cubierta
+    ctx.strokeStyle = c.neumaticoFilo;
+    ctx.lineWidth = Math.max(1.5, nr * 0.07);
     ctx.beginPath();
-    ctx.ellipse(nx, nBase - i * nr * 0.5, nr, nr * 0.58, 0, 0, TAU);
-    ctx.fill();
+    ctx.ellipse(nx, cy, nr * 0.94, nr * 0.52, 0, Math.PI * 1.15, Math.PI * 1.85);
+    ctx.stroke();
   }
   const nArriba = nBase - 2 * nr * 0.5;
   ctx.strokeStyle = c.llanta;
@@ -282,9 +308,16 @@ function pintarGaraje(ctx: CanvasRenderingContext2D, g: Geometria): void {
   const jAncho = Math.min(ancho * 0.15, fondo * 0.46);
   const jAlto = jAncho * 1.3;
   const jBase = suelo + fondo * 0.26;
-  ctx.fillStyle = c.cajonera;
+  const chapaJ = ctx.createLinearGradient(jx - jAncho / 2, 0, jx + jAncho / 2, 0);
+  chapaJ.addColorStop(0, c.cajoneraCanto);
+  chapaJ.addColorStop(0.35, c.cajoneraClara);
+  chapaJ.addColorStop(1, c.cajonera);
+  ctx.fillStyle = chapaJ;
   rectRedondeado(ctx, jx - jAncho / 2, jBase - jAlto, jAncho, jAlto, 6);
   ctx.fill();
+  ctx.strokeStyle = c.contorno;
+  ctx.lineWidth = Math.max(1.5, jAncho * 0.03);
+  ctx.stroke();
   ctx.fillStyle = c.cajoneraCanto;
   ctx.fillRect(jx + jAncho * 0.34, jBase - jAlto + 6, jAncho * 0.12, jAlto - 12);
   ctx.strokeStyle = c.tirador;
@@ -330,4 +363,7 @@ function pintarGaraje(ctx: CanvasRenderingContext2D, g: Geometria): void {
   ctx.arc(0, 0, g.coche.ancho * 0.62, 0, TAU);
   ctx.fill();
   ctx.restore();
+
+  // Lo ultimo: cerrar los bordes, igual que en la partida
+  vinetear(ctx, ancho, alto, COLOR.escenario.vineta, COLOR.escenario.vinetaSuave);
 }

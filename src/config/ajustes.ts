@@ -15,6 +15,38 @@ export const AJUSTES = {
   /** Frames seguidos fuera de presupuesto antes de bajar calidad. */
   framesParaBajar: 90,
 
+  /**
+   * Estilo: los numeros del acabado pintado que comparten el escenario, el
+   * monstruo y el taller. Todo esto se aplica dentro de los canvas de cache,
+   * una vez por tamano de pantalla, nunca por frame.
+   */
+  estilo: {
+    grano: {
+      /** Motas por cada 10 000 px de area. */
+      densidadAsfalto: 85,
+      densidadPared: 70,
+      densidadMonstruo: 40,
+      /** Tope duro: una pantalla grande no debe costar un pintado eterno. */
+      motasMaximas: 6000,
+      motaMinima: 0.5,
+      motaMaxima: 1.4,
+    },
+    /** Grosor del contorno de tinta, en fraccion del tamano del dibujo. */
+    contorno: 0.022,
+    /** Ancho del filo de luz del lomo, en las mismas unidades. */
+    filo: 0.016,
+    /** Rellenos alrededor con los que se construye el contorno. */
+    pasosContorno: 12,
+    /**
+     * A partir de que tamano —en fraccion del maximo— un monstruo se pinta
+     * con todos los remates. Los de lejos son diminutos y salen muchos a la
+     * vez: pintarles la sombra de cada colmillo es gasto que nadie ve.
+     */
+    detalle: 0.45,
+    /** Donde empieza a cerrarse la vineta, en fraccion del radio. */
+    vinetaDentro: 0.45,
+  },
+
   /** Escenario */
   horizonte: 0.4, // fraccion de la altura
   /** Caja del coche: abajo a la izquierda. */
