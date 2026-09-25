@@ -12,6 +12,10 @@ niveles, dos formas de jugar:
   dedo. Se gana al **atropellar 40 monstruos**. No se pierde: los que se
   escapan, se escapan.
 
+- **El juego se muestra en danes**; el codigo y esta documentacion siguen en
+  espanol. Todo lo que lee quien juega esta en `src/config/textos.ts` y en el
+  `nombre` y la `descripcion` de cada nivel: no hay ni un texto suelto en el
+  resto del codigo.
 - HTML + CSS + TypeScript + Canvas 2D, empaquetado con Vite.
 - **Cero dependencias en tiempo de ejecucion** y cero ficheros de sonido: el
   sonido esta sintetizado. De imagen solo hay las cuatro piezas que dibujo el
@@ -38,7 +42,26 @@ npm run preview     # sirve dist/ para comprobar la version compilada
 
 `npm run build` falla si fallan los tipos. No lo esquives.
 
+## Como se publica
+
+`.github/workflows/paginas.yml` compila y publica en **GitHub Pages** en cada
+push a `main`. No hay nada que configurar en el codigo: `vite.config.ts` usa
+`base: './'`, asi que el sitio sirve igual en la raiz de un dominio que en un
+subdirectorio como `/salva-el-coche/`.
+
+Lo unico que no hace el flujo de trabajo es **encender Pages**: eso se hace una
+vez en los ajustes del repositorio, eligiendo *GitHub Actions* como origen.
+
+> [!warning] Publicar el sitio lo hace publico de verdad
+> GitHub Pages sirve el sitio **a cualquiera con el enlace**, aunque el
+> repositorio sea privado. Y los dibujos llevan marcas de terceros —ver la
+> ultima decision de la lista de abajo—. Antes de encenderlo conviene tenerlo
+> decidido.
+
 ## Como se juega
+
+Los textos de la tabla salen en danes; aqui van en espanol para que se
+entienda el codigo.
 
 | Accion | Movil | Escritorio |
 | --- | --- | --- |
@@ -274,6 +297,10 @@ nuevo, en cambio, no es un nivel: es un motor pequeno mas, como
   los frames se alargan.
 - La mejor marca se guarda en `localStorage`; si el navegador no deja, el juego
   sigue funcionando sin ella.
+- **El juego esta en danes y el codigo en espanol**, a proposito: se traduce lo
+  que lee quien juega, no lo que lee quien programa. Volver a tener dos idiomas
+  seria duplicar `config/textos.ts` y dos cadenas por nivel, y elegir cual se
+  carga; hoy no hace falta y no se ha montado nada para ello.
 - **Los dibujos llevan marcas reales.** El coche, la pistola y el interior
   salen de fotografias e ilustraciones aportadas por el autor, y en ellas se
   leen un logotipo de Peugeot, un distintivo «107», el rotulo de un taller con

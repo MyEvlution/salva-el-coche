@@ -20,9 +20,9 @@ import type { NivelConduccion } from '../motor/tipos';
  */
 export const NIVEL_02: NivelConduccion = {
   id: 'nivel-02',
-  nombre: 'Al volante',
+  nombre: 'Bag rattet',
   descripcion:
-    'Ya no los esperas: vas a por ellos. Arrastra el dedo para girar el volante y atropellalos.',
+    'Nu venter du ikke på dem — du kører efter dem. Træk med fingeren for at dreje rattet, og kør dem ned.',
 
   modo: 'conduccion',
   fondo: 'carretera',

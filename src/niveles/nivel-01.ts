@@ -8,8 +8,8 @@ import type { NivelDefensa } from '../motor/tipos';
  */
 export const NIVEL_01: NivelDefensa = {
   id: 'nivel-01',
-  nombre: 'La carretera',
-  descripcion: 'Los monstruos del oxido quieren comerse tu coche. Un disparo, un monstruo.',
+  nombre: 'Landevejen',
+  descripcion: 'Rustmonstrene vil æde din bil. Ét skud, ét monster.',
 
   modo: 'defensa',
   fondo: 'carretera',

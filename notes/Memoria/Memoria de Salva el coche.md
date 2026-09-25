@@ -15,8 +15,12 @@ Estado el 2026-09-25:
 
 - Repositorio propio **`MyEvlution/salva-el-coche`, privado**. Está en el
   `.gitignore` del taller: se trabaja entrando en su carpeta.
-- **No está desplegado, y es a propósito.** El usuario publicará el sitio él
-  mismo cuando quiera; no configures Vercel ni GitHub Pages sin que lo pida.
+- **GitHub Pages**: el usuario lo pidió el 2026-09-25 y el flujo de trabajo
+  está listo (`.github/workflows/paginas.yml`, se dispara en cada push a
+  `main`). Falta encender Pages en los ajustes del repositorio. Ojo: Pages
+  sirve el sitio **a cualquiera con el enlace aunque el repositorio sea
+  privado**, y en un plan gratuito exige que el repositorio sea público.
+  Vercel sigue sin tocarse.
 - Dev server: **puerto 5177**, por nombre desde `.claude/launch.json`
   («Salva el coche (Vite dev)»). Ver [[Node 22 y los dev servers]].
 - **Hay dos niveles y dos modos** (`DefinicionNivel` es una unión discriminada
@@ -31,6 +35,9 @@ Estado el 2026-09-25:
   nombre de UUID: si se borran del escritorio, no hay forma de rehacer los
   assets. El del interior se parte con
   `herramientas/partir-interior.py`, que es reproducible byte a byte.
+- **El juego se muestra en danés** desde el 2026-09-25; los comentarios, el
+  README y las notas siguen en español. Los textos visibles están todos en
+  `src/config/textos.ts` y en el `nombre`/`descripcion` de cada nivel.
 - **Los dibujos llevan marcas reales** (logotipo de Peugeot, distintivo «107»,
   el rótulo y el teléfono de un taller, «SLIM COMBAT»). Para jugar en local da
   igual; **antes de publicar hay que decidir qué se hace con ellas**.

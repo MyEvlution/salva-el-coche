@@ -1,0 +1,56 @@
+# Publica el juego en GitHub Pages en cada push a main.
+#
+# El sitio es estatico y no tiene variables de entorno ni backend, asi que no
+# hay secretos que pasar: solo compilar `dist/` y subirlo. `vite.config.ts` usa
+# `base: './'`, asi que sirve igual en la raiz del dominio que en un subdirectorio.
+name: Publicar en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Para poder relanzarlo a mano desde la pestana Actions.
+  workflow_dispatch:
+
+# Lo justo: leer el codigo y publicar. Nada de escribir en el repositorio.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Una publicacion a la vez, y sin cancelar la que ya este en marcha.
+concurrency:
+  group: paginas
+  cancel-in-progress: false
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # `npm ci` y no `npm install`: instala exactamente lo del lockfile.
+      - run: npm ci
+
+      # Compila los tipos antes que el bundle; si fallan, no se publica nada.
+      - run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - id: despliegue
+        uses: actions/deploy-pages@v4
