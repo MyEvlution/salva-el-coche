@@ -11,27 +11,58 @@ import { TAU, rectRedondeado } from './formas';
  * La escena no se mueve, asi que se pinta una vez en un canvas aparte y por
  * frame solo se copia. Al salir de la portada se suelta: guardar una pantalla
  * entera mientras se juega es memoria tirada.
+ *
+ * El porton va en su propio canvas porque si se mueve: al empezar la partida
+ * sube, y por detras se ve la calle de la que vienen los monstruos.
  */
 export class Garaje {
-  private cache: HTMLCanvasElement | null = null;
+  private taller: HTMLCanvasElement | null = null;
+  private porton: HTMLCanvasElement | null = null;
+  private hueco = { x: 0, y: 0, ancho: 0, alto: 0 };
   private ancho = 0;
   private alto = 0;
 
   rehacer(g: Geometria, dpr: number): void {
-    const { canvas, ctx } = lienzoCache(g.ancho, g.alto, dpr);
-    pintarGaraje(ctx, g);
-    this.cache = canvas;
+    const taller = lienzoCache(g.ancho, g.alto, dpr);
+    pintarGaraje(taller.ctx, g);
+    this.taller = taller.canvas;
+
+    this.hueco = cajaPorton(g);
+    const hoja = lienzoCache(this.hueco.ancho, this.hueco.alto, dpr);
+    pintarPorton(hoja.ctx, this.hueco.ancho, this.hueco.alto);
+    this.porton = hoja.canvas;
+
     this.ancho = g.ancho;
     this.alto = g.alto;
   }
 
   liberar(): void {
-    this.cache = null;
+    this.taller = null;
+    this.porton = null;
   }
 
-  dibujar(ctx: CanvasRenderingContext2D): void {
-    if (this.cache) ctx.drawImage(this.cache, 0, 0, this.ancho, this.alto);
+  /** `abierto` va de 0 (cerrado) a 1 (subido del todo y fuera de la vista). */
+  dibujar(ctx: CanvasRenderingContext2D, abierto: number): void {
+    if (!this.taller) return;
+    ctx.drawImage(this.taller, 0, 0, this.ancho, this.alto);
+    if (!this.porton || abierto >= 1) return;
+    const h = this.hueco;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(h.x, h.y, h.ancho, h.alto);
+    ctx.clip();
+    ctx.drawImage(this.porton, h.x, h.y - h.alto * abierto, h.ancho, h.alto);
+    ctx.restore();
   }
+}
+
+/** Hueco del porton: lo comparten el taller y la hoja que sube. */
+function cajaPorton(g: Geometria): { x: number; y: number; ancho: number; alto: number } {
+  const techo = lineaTecho(g);
+  const suelo = lineaSuelo(g);
+  const ancho = Math.min(g.ancho * 0.62, g.coche.ancho * 1.9);
+  const alto = (suelo - techo) * 0.82;
+  return { x: (g.ancho - ancho) / 2, y: suelo - alto, ancho, alto };
 }
 
 /** Donde se aparca el coche en la portada: centrado, sin la pistola al lado. */
@@ -44,10 +75,43 @@ function lineaSuelo(g: Geometria): number {
   return g.alto * 0.56;
 }
 
+/** Donde acaba la banda oscura del techo. */
+function lineaTecho(g: Geometria): number {
+  return g.alto * 0.13;
+}
+
+/** La hoja del porton, en su propio canvas para poder subirla. */
+function pintarPorton(ctx: CanvasRenderingContext2D, ancho: number, alto: number): void {
+  const c = COLOR.garaje;
+  const chapa = ctx.createLinearGradient(0, 0, ancho, 0);
+  chapa.addColorStop(0, c.portonOscuro);
+  chapa.addColorStop(0.32, c.porton);
+  chapa.addColorStop(0.56, c.portonClaro);
+  chapa.addColorStop(1, c.portonOscuro);
+  ctx.fillStyle = chapa;
+  ctx.fillRect(0, 0, ancho, alto);
+
+  ctx.strokeStyle = c.portonJunta;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  const lamas = 11;
+  for (let i = 1; i < lamas; i++) {
+    const y = (alto * i) / lamas;
+    ctx.moveTo(0, y);
+    ctx.lineTo(ancho, y);
+  }
+  ctx.stroke();
+
+  ctx.fillStyle = c.portonTirador;
+  const tirador = ancho * 0.18;
+  rectRedondeado(ctx, (ancho - tirador) / 2, alto * 0.74, tirador, Math.max(7, alto * 0.04), 5);
+  ctx.fill();
+}
+
 function pintarGaraje(ctx: CanvasRenderingContext2D, g: Geometria): void {
   const c = COLOR.garaje;
   const { ancho, alto } = g;
-  const techo = alto * 0.13;
+  const techo = lineaTecho(g);
   const suelo = lineaSuelo(g);
   const fondo = alto - suelo;
   const coche = cocheEnGaraje(g);
@@ -84,38 +148,30 @@ function pintarGaraje(ctx: CanvasRenderingContext2D, g: Geometria): void {
   ctx.fillStyle = c.zocaloCanto;
   ctx.fillRect(0, suelo - zocalo, ancho, Math.max(3, alto * 0.005));
 
-  // -------------------------------------------------------------- porton
-  const pAncho = Math.min(ancho * 0.62, g.coche.ancho * 1.9);
-  const pAlto = (suelo - techo) * 0.82;
-  const px = (ancho - pAncho) / 2;
-  const py = suelo - pAlto;
-  const chapa = ctx.createLinearGradient(px, 0, px + pAncho, 0);
-  chapa.addColorStop(0, c.portonOscuro);
-  chapa.addColorStop(0.32, c.porton);
-  chapa.addColorStop(0.56, c.portonClaro);
-  chapa.addColorStop(1, c.portonOscuro);
-  ctx.fillStyle = chapa;
-  ctx.fillRect(px, py, pAncho, pAlto);
-
-  ctx.strokeStyle = c.portonJunta;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  const lamas = 11;
-  for (let i = 1; i < lamas; i++) {
-    const y = py + (pAlto * i) / lamas;
-    ctx.moveTo(px, y);
-    ctx.lineTo(px + pAncho, y);
-  }
-  ctx.stroke();
-
-  ctx.fillStyle = c.portonTirador;
-  const tAncho = pAncho * 0.18;
-  rectRedondeado(ctx, ancho / 2 - tAncho / 2, py + pAlto * 0.74, tAncho, Math.max(7, pAlto * 0.04), 5);
-  ctx.fill();
+  // ------------------------------------------------- hueco del porton
+  // Detras de la hoja esta la calle: el cielo y el asfalto del nivel, que es
+  // de donde van a salir los monstruos en cuanto el porton suba.
+  const hueco = cajaPorton(g);
+  // Mismo cielo y mismo asfalto que la partida, con su linea de horizonte:
+  // asi el hueco se lee como la calle y no como un panel claro.
+  const horizonte = hueco.y + hueco.alto * 0.5;
+  ctx.fillStyle = COLOR.escenario.cielo;
+  ctx.fillRect(hueco.x, hueco.y, hueco.ancho, horizonte - hueco.y);
+  const asfalto = ctx.createLinearGradient(0, horizonte, 0, hueco.y + hueco.alto);
+  asfalto.addColorStop(0, COLOR.escenario.sueloAlto);
+  asfalto.addColorStop(1, COLOR.escenario.sueloBajo);
+  ctx.fillStyle = asfalto;
+  ctx.fillRect(hueco.x, horizonte, hueco.ancho, hueco.y + hueco.alto - horizonte);
+  // Sombra del dintel, para que el hueco tenga fondo
+  const dintel = ctx.createLinearGradient(0, hueco.y, 0, hueco.y + hueco.alto * 0.3);
+  dintel.addColorStop(0, c.sombra);
+  dintel.addColorStop(1, c.sombraSuave);
+  ctx.fillStyle = dintel;
+  ctx.fillRect(hueco.x, hueco.y, hueco.ancho, hueco.alto * 0.3);
 
   ctx.strokeStyle = c.marco;
   ctx.lineWidth = Math.max(4, ancho * 0.012);
-  ctx.strokeRect(px, py, pAncho, pAlto);
+  ctx.strokeRect(hueco.x, hueco.y, hueco.ancho, hueco.alto);
 
   // ---------------------------------------------------- techo y tubos
   ctx.fillStyle = c.techo;

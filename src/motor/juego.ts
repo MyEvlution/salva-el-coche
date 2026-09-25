@@ -74,6 +74,10 @@ export class Juego {
   private escena: Escena = 'inicio';
   private puntos = 0;
   private infinito = false;
+  /** 0 a 1 mientras sube el porton del taller. */
+  private apertura = 0;
+  /** Negro que queda por delante de la partida al arrancar. */
+  private fundido = 0;
   private mejor = 0;
   private reloj = 0;
   private cuentaAtrasAparicion = 0;
@@ -137,7 +141,16 @@ export class Juego {
   // ---------------------------------------------------------------- escenas
 
   empezar(): void {
+    // Desde la portada se sale abriendo el porton. Desde la pausa o la
+    // derrota no: ahi ya no estamos en el taller, se reanuda y punto.
+    const desdeElTaller = this.escena === 'inicio';
     this.reiniciarEstado();
+    if (desdeElTaller) {
+      this.apertura = 0;
+      this.cambiarEscena('abriendo');
+      return;
+    }
+    this.fundido = 0;
     this.cambiarEscena('jugando');
   }
 
@@ -208,16 +221,22 @@ export class Juego {
 
   /** Reinicia desde cualquier pantalla que lo permita. */
   reiniciar(): void {
+    if (this.escena === 'abriendo') return;
     if (this.escena === 'derrota' && this.tiempoDerrota < AJUSTES.esperaTrasDerrota) return;
     this.empezar();
   }
 
+  /** El taller se ve en la portada y mientras se abre el porton. */
+  private get enElTaller(): boolean {
+    return this.escena === 'inicio' || this.escena === 'abriendo';
+  }
+
   private cambiarEscena(escena: Escena): void {
-    const anterior = this.escena;
+    const estaba = this.enElTaller;
     this.escena = escena;
-    // El taller solo hace falta en la portada, y ocupa una pantalla entera.
-    if (escena === 'inicio') this.garaje.rehacer(this.geometria, this.lienzo.dpr);
-    else if (anterior === 'inicio') this.garaje.liberar();
+    // Ocupa una pantalla entera: se rehace al entrar y se suelta al salir.
+    if (this.enElTaller && !estaba) this.garaje.rehacer(this.geometria, this.lienzo.dpr);
+    else if (!this.enElTaller && estaba) this.garaje.liberar();
     this.oyentes.alCambiarEscena(escena, this.datos);
   }
 
@@ -231,7 +250,7 @@ export class Juego {
     this.coche.rehacer(this.geometria.coche.ancho, dpr);
     this.monstruo.rehacer(this.geometria.escalaMaxima, dpr);
     this.pistola.rehacer(this.geometria.ancho, this.geometria.alto, dpr);
-    if (this.escena === 'inicio') this.garaje.rehacer(this.geometria, dpr);
+    if (this.enElTaller) this.garaje.rehacer(this.geometria, dpr);
   }
 
   // ------------------------------------------------------------ dificultad
@@ -461,6 +480,18 @@ export class Juego {
   actualizar(dt: number): void {
     if (this.escena === 'pausa') return;
 
+    if (this.escena === 'abriendo') {
+      this.apertura += dt / AJUSTES.apertura.duracion;
+      if (this.apertura < 1) return;
+      this.apertura = 1;
+      // Se entra a oscuras y la partida se aclara sola: asi el corte entre
+      // el taller y la carretera no se ve.
+      this.fundido = 1;
+      this.cambiarEscena('jugando');
+      return;
+    }
+    if (this.fundido > 0) this.fundido = Math.max(0, this.fundido - dt / AJUSTES.apertura.entrada);
+
     if (this.congelado > 0) {
       this.congelado -= dt;
       return;
@@ -541,10 +572,18 @@ export class Juego {
     const g = this.geometria;
 
     // La portada no es la partida: es el coche aparcado en el taller.
-    if (this.escena === 'inicio') {
-      this.garaje.dibujar(ctx);
+    if (this.enElTaller) {
+      const a = AJUSTES.apertura;
+      const t = this.escena === 'abriendo' ? this.apertura : 0;
+      // La puerta acaba antes que el paso, para que de tiempo a verla llegar
+      // arriba; el negro entra despues y tapa el corte.
+      const puerta = Math.min(1, t / a.fraccionPuerta);
+      this.garaje.dibujar(ctx, puerta * puerta * (3 - 2 * puerta));
       const sitio = cocheEnGaraje(g);
       this.coche.dibujar(ctx, sitio.x, sitio.base);
+      if (t > a.inicioFundido) {
+        this.oscurecer(ctx, g, Math.pow((t - a.inicioFundido) / (1 - a.inicioFundido), a.curvaFundido));
+      }
       return;
     }
 
@@ -640,6 +679,16 @@ export class Juego {
     if (peligro > 0) {
       this.aviso.bordePantalla(ctx, g, peligro, Aviso.latido(this.reloj, this.movimientoReducido));
     }
+
+    // Lo ultimo de todo: el negro con el que se entra desde el taller
+    if (this.fundido > 0) this.oscurecer(ctx, g, this.fundido);
+  }
+
+  /** Velo negro a pantalla completa, para los cortes entre escenas. */
+  private oscurecer(ctx: CanvasRenderingContext2D, g: Geometria, alfa: number): void {
+    if (alfa <= 0) return;
+    ctx.fillStyle = conAlfa(COLOR.efectos.fundido, Math.min(1, alfa));
+    ctx.fillRect(0, 0, g.ancho, g.alto);
   }
 
   private dibujarDisparos(ctx: CanvasRenderingContext2D): void {

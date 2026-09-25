@@ -114,6 +114,12 @@ nunca se hace es meter en el motor una constante de un nivel.
   dentro del garaje (`arte/garaje.ts`). Es una pantalla entera cacheada, asi
   que se suelta al salir de la portada y se rehace al volver: guardarla
   mientras se juega seria memoria tirada.
+- **Al darle a jugar sube el porton** (`AJUSTES.apertura`): dos segundos en
+  los que se ve la calle por el hueco —el mismo cielo y el mismo asfalto del
+  nivel— mientras la pantalla se va a negro. La puerta acaba antes que el paso
+  (`fraccionPuerta`) para que de tiempo a verla llegar arriba, y el negro tapa
+  el corte; la partida arranca a oscuras y se aclara sola. La hoja del porton
+  va en su propio canvas, que es lo unico que se mueve del taller.
 - **El selector de nivel se dibuja solo** a partir de `NIVELES`. La flecha que
   no lleva a ningun sitio no se pinta pero deja su hueco, para que el nombre
   no baile. Con un nivel no sale ninguna; en cuanto se registre el segundo,

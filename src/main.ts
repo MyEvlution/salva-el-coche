@@ -68,6 +68,8 @@ function mostrarEscena(escena: Escena, datos: DatosPartida): void {
   hud.visible(escena === 'jugando' || escena === 'pausa');
 
   switch (escena) {
+    // Mientras sube el porton no hay tarjeta ni marcador: solo el taller.
+    case 'abriendo':
     case 'jugando':
       pantallas.ocultar();
       break;

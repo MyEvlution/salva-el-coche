@@ -70,6 +70,8 @@ export const COLOR = {
     fallo: '255, 255, 255',
     /** Rastro de los abatidos y aviso de peligro, en triplete para el alfa. */
     mancha: '38, 24, 16',
+    /** Negro del fundido entre la portada y la partida. */
+    fundido: '6, 10, 14',
     aviso: '214, 58, 44',
   },
 } as const;

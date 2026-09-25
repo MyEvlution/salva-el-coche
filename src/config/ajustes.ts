@@ -93,6 +93,26 @@ export const AJUSTES = {
    */
   infinito: { recorridoMinimo: 1.2 },
 
+  /**
+   * Apertura del porton al darle a jugar: el taller se abre y la pantalla se
+   * va a negro mientras sube la hoja. Al acabar arranca la partida.
+   */
+  apertura: {
+    /** Segundos que dura el paso entero. */
+    duracion: 2,
+    /**
+     * En que parte del paso acaba de subir el porton. Menos de 1 para que
+     * de tiempo a verlo llegar arriba antes de que la pantalla se apague.
+     */
+    fraccionPuerta: 0.78,
+    /** En que parte del paso empieza el fundido a negro. */
+    inicioFundido: 0.5,
+    /** Exponente del fundido: por encima de 1 entra despacio. */
+    curvaFundido: 1.6,
+    /** Segundos que tarda la partida en aclararse al arrancar. */
+    entrada: 0.45,
+  },
+
   /** Efectos */
   particulas: {
     maximo: 220,

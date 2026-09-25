@@ -61,7 +61,11 @@ export interface DefinicionNivel {
 }
 
 /** Estados posibles de la partida. */
-export type Escena = 'inicio' | 'jugando' | 'pausa' | 'victoria' | 'derrota';
+/**
+ * `abriendo` es el paso de la portada a la partida: sube el porton del taller
+ * y la pantalla se va a negro. No se juega ni se puede pausar.
+ */
+export type Escena = 'inicio' | 'abriendo' | 'jugando' | 'pausa' | 'victoria' | 'derrota';
 
 /** Un enemigo vivo. `avance` va de 0 (horizonte) a 1 (encima del coche). */
 export interface Enemigo2D {
