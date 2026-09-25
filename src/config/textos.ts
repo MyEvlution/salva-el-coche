@@ -40,13 +40,6 @@ export const TEXTOS = {
     accion: 'Reintentar',
   },
 
-  /** Rotulos que van pintados dentro del dibujo, no en la interfaz. */
-  arte: {
-    cocheDistintivo: '1.0',
-    pistolaMarca: 'ANTI',
-    pistolaModelo: 'OXIDO',
-  },
-
   marcador: {
     abatidoUno: 'monstruo abatido',
     abatidosVarios: 'monstruos abatidos',

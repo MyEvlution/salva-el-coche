@@ -18,19 +18,29 @@ export const AJUSTES = {
   /** Escenario */
   horizonte: 0.4, // fraccion de la altura
   /** Caja del coche: abajo a la izquierda. */
-  coche: { izquierda: 0.02, derecha: 0.55, anchoMaximo: 520 },
+  coche: {
+    izquierda: 0.02,
+    derecha: 0.55,
+    anchoMaximo: 520,
+    /** Alto / ancho del dibujo del coche. La geometria cuadra con esto. */
+    razonAlto: 0.827,
+  },
   /**
-   * Caja de la pistola: abajo a la derecha, lejos del pulgar izquierdo.
-   * `escorzo` comprime el dibujo a lo largo del canon para que la pistola
-   * parezca que apunta hacia dentro de la pantalla y no de perfil.
+   * La pistola va abajo a la derecha, lejos del pulgar izquierdo. El dibujo
+   * se ancla por su esquina inferior derecha, un poco fuera de pantalla: en
+   * primera persona la mano entra por el borde, no flota en el aire.
    */
   pistola: {
-    izquierda: 0.7,
-    derecha: 0.985,
-    altoMaximo: 0.52,
-    escorzo: 0.62,
+    /** Parte del ancho de la pantalla que ocupa el dibujo... */
+    anchoRelativo: 0.56,
+    /** ...y del alto, que es lo que manda en apaisado. */
+    altoRelativo: 0.6,
+    anclaX: 1,
+    anclaY: 1.05,
     /** Cuanto se inclina la pistola hacia el punto tocado: 1 = apunta del todo. */
     seguimiento: 0.55,
+    /** Pixeles de retroceso al disparar, en unidades del dibujo. */
+    retroceso: 34,
   },
 
   /** Proyeccion pseudo-3D: los monstruos convergen hacia el coche. */

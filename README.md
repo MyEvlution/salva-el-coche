@@ -57,6 +57,7 @@ src/
 │   ├── particulas.ts deposito fijo de particulas
 │   └── tipos.ts     los contratos, incluido `DefinicionNivel`
 ├── arte/            dibujo procedural, cacheado en canvas aparte
+│   ├── assets/   coche.webp  pistola.webp
 │   ├── coche.ts  fondo.ts  formas.ts  garaje.ts  monstruo.ts  pistola.ts
 ├── niveles/         los niveles, que son datos
 │   ├── indice.ts    registro de niveles
@@ -94,6 +95,17 @@ nunca se hace es meter en el motor una constante de un nivel.
   que una partida seguida dure unos 70 segundos —30 monstruos en la primera
   mitad y los 70 restantes en la segunda—, subiendo poco a poco: mas
   apariciones por segundo y monstruos que cruzan cada vez mas rapido.
+- **El coche y la pistola son imagenes**, no vectores: los dibujos del taller
+  (`src/assets/`). Salen de dos PNG de 1448x1086 recortados a su contenido,
+  reducidos y pasados a **WebP**: 306 kB los dos, frente a 2,45 MB en PNG.
+  El monstruo, el escenario y el taller siguen siendo vectores.
+- **Las dos imagenes se reducen una sola vez** a un canvas del tamano bueno y
+  por frame solo se copian. Filtrar una imagen de 1000 px en cada frame
+  disparaba el p95 de 17 a 93 ms; cacheada vuelve a 21.
+- **La pistola ya no finge el escorzo**: la perspectiva viene en el dibujo.
+  El modulo solo la coloca, la gira un poco hacia donde se toca y dice donde
+  cae la punta del canon (`PUNTA`), que es de donde salen el fogonazo y el
+  trazador. `PIVOTE` es el centro del puno, y el eje del giro.
 - **La portada es el taller**, no la partida: el mismo coche rojo aparcado
   dentro del garaje (`arte/garaje.ts`). Es una pantalla entera cacheada, asi
   que se suelta al salir de la portada y se rehace al volver: guardarla

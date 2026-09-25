@@ -631,8 +631,6 @@ export class Juego {
       this.retroceso,
       enDerrota ? this.temblorX * 0.5 : 0,
       enDerrota ? this.temblorY * 0.5 : 0,
-      g.ancho,
-      g.alto,
       this.punta,
     );
 

@@ -26,8 +26,9 @@ export function calcularGeometria(ancho: number, alto: number): Geometria {
   const izquierda = ancho * AJUSTES.coche.izquierda;
   const derecha = ancho * AJUSTES.coche.derecha;
   const cajaAlto = Math.min(ancho * 0.49, alto * 0.45);
-  const cocheAncho = Math.min(derecha - izquierda, cajaAlto / 0.665, AJUSTES.coche.anchoMaximo);
-  const cocheAlto = cocheAncho * 0.665;
+  const razon = AJUSTES.coche.razonAlto;
+  const cocheAncho = Math.min(derecha - izquierda, cajaAlto / razon, AJUSTES.coche.anchoMaximo);
+  const cocheAlto = cocheAncho * razon;
   const cocheX = (izquierda + derecha) / 2;
   const base = alto;
   const yFinal = base - cocheAlto + cocheAlto * 0.32;
