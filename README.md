@@ -1,14 +1,22 @@
 # Salva el coche
 
-Juego 2D para navegador, pensado para jugar con el pulgar en el movil. Los
-monstruos del oxido avanzan hacia tu coche desde el horizonte y tu los paras
-con la pistola de producto antioxido: **un toque, un disparo, un monstruo**.
+Juego 2D para navegador, pensado para jugar con el pulgar en el movil. Dos
+niveles, dos formas de jugar:
 
-Se gana el nivel 1 al abatir **100 monstruos**. Se pierde si uno llega al coche.
+- **Nivel 1 — La carretera.** Los monstruos del oxido avanzan hacia tu coche
+  desde el horizonte y tu los paras con la pistola de producto antioxido: **un
+  toque, un disparo, un monstruo**. Se gana al abatir **100**; se pierde si uno
+  llega al coche.
+- **Nivel 2 — Al volante.** Ahora vas dentro. El coche arranca parado y coge
+  velocidad solo; tu unico mando es el volante, que se gira arrastrando el
+  dedo. Se gana al **atropellar 40 monstruos**. No se pierde: los que se
+  escapan, se escapan.
 
 - HTML + CSS + TypeScript + Canvas 2D, empaquetado con Vite.
-- **Cero dependencias en tiempo de ejecucion** y cero ficheros de imagen o de
-  sonido: todo el dibujo es vectorial y el sonido esta sintetizado.
+- **Cero dependencias en tiempo de ejecucion** y cero ficheros de sonido: el
+  sonido esta sintetizado. De imagen solo hay las cuatro piezas que dibujo el
+  autor —coche, pistola e interior—; el monstruo, el escenario y el taller son
+  vectores.
 - Sitio estatico: `npm run build` deja en `dist/` algo que se puede publicar
   tal cual.
 
@@ -34,9 +42,14 @@ npm run preview     # sirve dist/ para comprobar la version compilada
 
 | Accion | Movil | Escritorio |
 | --- | --- | --- |
-| Disparar | tocar el monstruo | clic |
+| Disparar (nivel 1) | tocar el monstruo | clic |
+| Girar el volante (nivel 2) | arrastrar el dedo alrededor del volante | arrastrar con el raton |
 | Pausa | boton ❚❚ | `Esc` o `P` |
 | Reintentar | boton de la pantalla | `R` |
+
+El volante se agarra donde sea: lo que cuenta es **cuanto gira el dedo
+alrededor del eje**, no cuanto se desplaza, asi que da igual tener el pulgar
+en el borde o en el centro. Al soltarlo vuelve solo al centro.
 
 ## Estructura
 
@@ -51,18 +64,21 @@ src/
 │   ├── audio.ts     sonido sintetizado con WebAudio
 │   ├── bucle.ts     requestAnimationFrame, delta time y calidad adaptativa
 │   ├── entrada.ts   puntero, tacto y teclado normalizados
-│   ├── geometria.ts medidas del escenario y proyeccion pseudo-3D
+│   ├── conduccion.ts el nivel 2 entero: volante, velocidad y atropellos
+│   ├── geometria.ts medidas de los dos modos y proyeccion pseudo-3D
 │   ├── juego.ts     estado de la partida, disparos y dibujo
 │   ├── lienzo.ts    canvas, pixel ratio y redimensiones
 │   ├── particulas.ts deposito fijo de particulas
 │   └── tipos.ts     los contratos, incluido `DefinicionNivel`
 ├── arte/            dibujo procedural, cacheado en canvas aparte
-│   ├── assets/   coche.webp  pistola.webp
+│   ├── assets/   coche.webp  pistola.webp  interior  volante
+│   ├── carretera.ts la calzada del nivel 2, que se mueve
 │   ├── coche.ts  estilo.ts  fondo.ts  formas.ts
-│   ├── garaje.ts  monstruo.ts  pistola.ts
+│   ├── garaje.ts  interior.ts  monstruo.ts  pistola.ts
 ├── niveles/         los niveles, que son datos
 │   ├── indice.ts    registro de niveles
-│   └── nivel-01.ts  nivel 1
+│   ├── nivel-01.ts  nivel 1, modo defensa
+│   └── nivel-02.ts  nivel 2, modo conduccion
 └── ui/              HUD y pantallas, en HTML
     ├── estilos.css  hud.ts  pantallas.ts
 ```
@@ -71,10 +87,13 @@ src/
 
 Un nivel es un objeto de datos. **No hay que tocar el motor.**
 
-1. Copia `src/niveles/nivel-01.ts` a `src/niveles/nivel-02.ts` y cambia los
-   numeros: `id`, `nombre`, `descripcion`, el `objetivo`, la curva de
-   `dificultad` y la franja por la que aparecen los enemigos.
-2. Registralo en `src/niveles/indice.ts`, dentro de `NIVELES`.
+1. Elige el **modo**: `defensa` (como el nivel 1) o `conduccion` (como el 2).
+   Es lo primero, porque decide que numeros lleva el nivel: los de `defensa`
+   van en `dificultad` y los de `conduccion` en `conduccion`.
+2. Copia el archivo del nivel que mas se parezca y cambia los numeros: `id`,
+   `nombre`, `descripcion`, el `objetivo`, la curva y la franja por la que
+   aparecen los enemigos.
+3. Registralo en `src/niveles/indice.ts`, dentro de `NIVELES`.
 
 ```ts
 export const NIVELES: readonly DefinicionNivel[] = [NIVEL_01, NIVEL_02];
@@ -84,9 +103,80 @@ La curva de dificultad se interpola entre `inicio` y `fin` segun lo cerca que
 estes del objetivo: **cada monstruo abatido aprieta un poco mas**. `suavizado`
 por encima de 1 deja la primera mitad tranquila; por debajo, aprieta antes.
 
+`DefinicionNivel` es una **union discriminada por `modo`**: un nivel de
+conduccion no puede declarar una curva de defensa ni al reves, y si se anade
+un modo nuevo el compilador senala todos los sitios que hay que atender.
+
 Si un nivel futuro necesita una mecanica que el motor todavia no tiene, se
 anade al motor como capacidad opcional y la definicion decide si la usa. Lo que
-nunca se hace es meter en el motor una constante de un nivel.
+nunca se hace es meter en el motor una constante de un nivel. Un **modo**
+nuevo, en cambio, no es un nivel: es un motor pequeno mas, como
+`motor/conduccion.ts`.
+
+## Decisiones del nivel 2
+
+- **El dibujo del interior viene en una pieza y se usa en dos.** La ilustracion
+  original trae el volante pintado dentro del salpicadero, y un volante pintado
+  no gira. Un script de autoria lo separo: el salpicadero por un lado —con el
+  hueco del volante rellenado por difusion, de modo que el cuadro de mandos,
+  los mandos de la columna y el resto siguen ahi— y el volante por otro,
+  recortado y centrado en su eje. Girar el segundo sobre el primero es todo el
+  truco. La mascara del volante no se dibujo a mano: se hizo creciendo una
+  region desde el centro del airbag, que separa sola la llanta y los radios de
+  los tres huecos.
+- **El filo exterior de la llanta no gira.** Un anillo es igual gire lo que
+  gire, asi que los ultimos pixeles del borde se quedan en el salpicadero y el
+  volante se desvanece contra ellos. Asi no hay ni costura ni halo, por mucho
+  que falle el recorte un pixel arriba o abajo.
+- **Cada dibujo con transparencia va en dos archivos**: el color en JPEG y el
+  recorte en PNG de solo alfa. Juntos pesan 434 kB; el mismo par en PNG con
+  alfa pesaba 3,1 MB. `arte/interior.ts` los une al cargar con
+  `destination-in`. El alfa se redondea a 0 o 255 antes de guardarlo: venia con
+  ruido de un valor o dos, y ese ruido por si solo cuadruplicaba el PNG.
+- **Solo se carga el nivel que se juega.** El interior se descarga cuando se
+  elige el nivel 2 en la portada, no al abrir el juego: quien solo juegue al
+  nivel 1 no paga esos 434 kB.
+- **La ventana es el hueco del propio dibujo.** No hay recorte ni mascara en el
+  motor: se pinta la carretera a pantalla completa y encima el salpicadero, que
+  tapa todo menos su parte transparente. El borde de abajo del parabrisas que
+  usan las medidas es **el del centro del cristal**, no el mas bajo del hueco:
+  mas a la izquierda el hueco sigue hasta la ventanilla, pero por ahi no viene
+  nadie, y tomar aquel dejaba la salpicadura del atropello escondida detras del
+  salpicadero.
+- **El dibujo cubre siempre la pantalla.** En vertical entra casi justo. En
+  apaisado sobra dibujo a lo alto y manda `AJUSTES.interior.ejeEnPantalla`, que
+  pasa de 1 a proposito: el eje del volante se va por debajo del borde y queda
+  a la vista la carretera y el arco de arriba del volante. Ademas, para el
+  horizonte solo cuenta **el trozo de parabrisas que se ve**; con el hueco
+  entero, en apaisado el horizonte caia fuera de la pantalla y no habia cielo.
+- **El volante se agarra por el angulo, no por el desplazamiento.** El gesto
+  mide cuanto gira el dedo alrededor del eje desde que se apoyo, asi que
+  funciona igual en el borde que cerca del centro. Pegado al eje un milimetro
+  serian treinta grados, asi que hay una zona muerta
+  (`AJUSTES.conduccion.volante.zonaMuerta`) en la que el gesto no se lee sino
+  que se vuelve a tomar la referencia: al salir de ella el volante no pega un
+  salto.
+- **Parado no se gira.** El desplazamiento a lo ancho es proporcional a la
+  velocidad, como en un coche de verdad. Es lo que hace que los primeros
+  segundos, con el coche arrancando, se sientan pesados.
+- **La dificultad va con el reloj, al reves que en el nivel 1.** Aqui lo que
+  aprieta es la velocidad, y la velocidad no la decide el jugador: sube sola.
+  Atar la dificultad a los aciertos hubiera premiado fallar.
+- **En infinito la velocidad tiene techo** (`AJUSTES.infinito.marchaMaxima`).
+  Sin el, la rampa extrapolada acaba cruzando la calzada en una decima de
+  segundo: eso no es dificil, es que no se ve.
+- **Las rodadas del asfalto se apagan en este nivel** (`pintarCalle`, ultimo
+  parametro). Van pintadas en el cache, y una calzada que se desplaza al girar
+  el volante con unas rodadas clavadas en su sitio se nota al instante. Su
+  papel lo hacen las marcas viales, que si se mueven y son lo unico que se
+  pinta por frame de la calzada.
+- **Las rayas se reparten en avance, no en pantalla.** Repartidas en avance, la
+  perspectiva las junta sola al fondo; repartidas en pantalla quedarian igual
+  de separadas cerca y lejos, y la carretera dejaria de tener profundidad.
+- **Este nivel no se pierde.** Es lo que se pidio: aparecen monstruos y se
+  atropellan. Ponerle una derrota —que se escapen cueste algo, que haya un
+  limite de tiempo— seria inventarse una mecanica, asi que `derrota` es
+  `ninguna` y el tipo lo admite explicitamente.
 
 ## Decisiones que conviene conocer
 
@@ -184,5 +274,9 @@ nunca se hace es meter en el motor una constante de un nivel.
   los frames se alargan.
 - La mejor marca se guarda en `localStorage`; si el navegador no deja, el juego
   sigue funcionando sin ella.
-- El coche y la pistola estan inspirados en fotografias reales, pero los
-  rotulos son genericos a proposito: no se usa ninguna marca de terceros.
+- **Los dibujos llevan marcas reales.** El coche, la pistola y el interior
+  salen de fotografias e ilustraciones aportadas por el autor, y en ellas se
+  leen un logotipo de Peugeot, un distintivo «107», el rotulo de un taller con
+  su telefono y un «SLIM COMBAT» en la pistola. Para jugar en local da igual;
+  **antes de publicar el juego hay que decidir que se hace con ellos**, porque
+  no son marcas propias.

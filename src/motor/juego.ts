@@ -8,11 +8,19 @@ import { MONSTRUO_LOCAL, Monstruo, aperturaNormal } from '../arte/monstruo';
 import { ANGULO_REPOSO, Pistola, type PuntaPistola } from '../arte/pistola';
 import { TAU, conAlfa } from '../arte/formas';
 import { Audio } from './audio';
+import { Conduccion } from './conduccion';
 import { Lienzo } from './lienzo';
 import { Manchas } from './manchas';
 import { Particulas } from './particulas';
 import { calcularGeometria, proyectar, type Geometria } from './geometria';
-import type { DefinicionNivel, Enemigo2D, Escena, Proyeccion, Rampa } from './tipos';
+import type {
+  CurvaDificultad,
+  DefinicionNivel,
+  Enemigo2D,
+  Escena,
+  Proyeccion,
+  Rampa,
+} from './tipos';
 
 /** Lo que el juego le cuenta a la interfaz. */
 export interface OyentesJuego {
@@ -46,6 +54,22 @@ interface Anillo {
 }
 
 const MAX_ENEMIGOS = 16;
+
+/**
+ * Curva de relleno para cuando el nivel no es de defensa. No llega a usarse
+ * —en conduccion la dificultad la lleva `Conduccion`, con su propio reloj—,
+ * pero deja que los calculos del modo defensa no tengan que preguntar por el
+ * modo en cada linea.
+ */
+const SIN_CURVA: CurvaDificultad = {
+  recorrido: { inicio: 1, fin: 1 },
+  ritmo: { inicio: 1, fin: 1 },
+  simultaneos: { inicio: 0, fin: 0 },
+  aparicionDoble: { inicio: 0, fin: 0 },
+  variacion: 0,
+  suavizado: 1,
+  respiroInicial: 0,
+};
 const MAX_TRAZADORES = 8;
 const MAX_ANILLOS = 12;
 
@@ -99,6 +123,8 @@ export class Juego {
   private fogonazoY = 0;
 
   private readonly movimientoReducido: boolean;
+  /** El nivel 2 se juega desde dentro del coche y lo lleva este. */
+  private conduccion: Conduccion | null = null;
 
   constructor(
     private readonly lienzo: Lienzo,
@@ -121,6 +147,7 @@ export class Juego {
     }
 
     this.mejor = leerMejorMarca();
+    this.montarModo();
     lienzo.alCambiar(() => this.rehacer());
     this.rehacer();
   }
@@ -136,6 +163,34 @@ export class Juego {
 
   get escenaActual(): Escena {
     return this.escena;
+  }
+
+  /** Numeros del modo defensa. En conduccion no se consultan. */
+  private get curva(): CurvaDificultad {
+    return this.nivel.modo === 'defensa' ? this.nivel.dificultad : SIN_CURVA;
+  }
+
+  /**
+   * Prepara el modo del nivel. Solo hay uno vivo a la vez: el nivel 2 ocupa
+   * una pantalla entera de dibujos y no tiene sentido tenerlo cargado
+   * mientras se juega al 1.
+   */
+  private montarModo(): void {
+    if (this.nivel.modo !== 'conduccion') {
+      this.conduccion = null;
+      return;
+    }
+    if (this.conduccion) {
+      this.conduccion.cambiarNivel(this.nivel);
+      return;
+    }
+    this.conduccion = new Conduccion(
+      this.nivel,
+      this.monstruo,
+      this.particulas,
+      this.movimientoReducido,
+      () => this.sumarAtropello(),
+    );
   }
 
   // ---------------------------------------------------------------- escenas
@@ -167,6 +222,8 @@ export class Juego {
   seleccionarNivel(nivel: DefinicionNivel): void {
     if (this.escena !== 'inicio' || nivel === this.nivel) return;
     this.nivel = nivel;
+    this.montarModo();
+    this.rehacer();
     this.cambiarEscena('inicio');
   }
 
@@ -182,7 +239,7 @@ export class Juego {
     // Pantalla limpia: la pausa de la victoria corta el ritmo, y reanudar con
     // un monstruo a un palmo del coche seria una derrota regalada.
     for (const e of this.enemigos) e.vivo = false;
-    this.cuentaAtrasAparicion = this.nivel.dificultad.respiroInicial;
+    this.cuentaAtrasAparicion = this.curva.respiroInicial;
     this.cambiarEscena('jugando');
   }
 
@@ -202,7 +259,8 @@ export class Juego {
     this.retroceso = 0;
     this.sujecion = 0;
     this.fogonazo = 0;
-    this.cuentaAtrasAparicion = this.nivel.dificultad.respiroInicial;
+    this.cuentaAtrasAparicion = this.curva.respiroInicial;
+    this.conduccion?.reiniciar();
     this.particulas.limpiar();
     this.manchas.limpiar();
     for (const e of this.enemigos) e.vivo = false;
@@ -245,12 +303,19 @@ export class Juego {
   private rehacer(): void {
     this.geometria = calcularGeometria(this.lienzo.ancho, this.lienzo.alto);
     const { dpr } = this.lienzo;
-    this.fondo.rehacer(this.geometria, dpr);
     this.aviso.rehacer(this.ctx, this.geometria);
     this.coche.rehacer(this.geometria.coche.ancho, dpr);
+    if (this.enElTaller) this.garaje.rehacer(this.geometria, dpr);
+
+    // Cada modo rehace lo suyo, y el monstruo se cachea al tamano del que
+    // este en juego: los dos niveles lo ven de tamanos muy distintos.
+    if (this.conduccion) {
+      this.conduccion.rehacer(this.geometria.ancho, this.geometria.alto, dpr);
+      return;
+    }
+    this.fondo.rehacer(this.geometria, dpr);
     this.monstruo.rehacer(this.geometria.escalaMaxima, dpr);
     this.pistola.rehacer(this.geometria.ancho, this.geometria.alto, dpr);
-    if (this.enElTaller) this.garaje.rehacer(this.geometria, dpr);
   }
 
   // ------------------------------------------------------------ dificultad
@@ -261,7 +326,7 @@ export class Juego {
    */
   private get progreso(): number {
     const t = Math.max(0, this.puntos / this.nivel.objetivo.cantidad);
-    return Math.pow(this.infinito ? t : Math.min(1, t), this.nivel.dificultad.suavizado);
+    return Math.pow(this.infinito ? t : Math.min(1, t), this.curva.suavizado);
   }
 
   private rampa(r: Rampa): number {
@@ -272,17 +337,17 @@ export class Juego {
   private get recorrido(): number {
     return Math.max(
       AJUSTES.infinito.recorridoMinimo,
-      this.rampa(this.nivel.dificultad.recorrido),
+      this.rampa(this.curva.recorrido),
     );
   }
 
   /** Monstruos permitidos a la vez, sin pasarse del deposito. */
   private get simultaneos(): number {
-    return Math.min(MAX_ENEMIGOS, Math.round(this.rampa(this.nivel.dificultad.simultaneos)));
+    return Math.min(MAX_ENEMIGOS, Math.round(this.rampa(this.curva.simultaneos)));
   }
 
   private variar(valor: number): number {
-    const v = this.nivel.dificultad.variacion;
+    const v = this.curva.variacion;
     return valor * (1 - v + Math.random() * v * 2);
   }
 
@@ -329,6 +394,11 @@ export class Juego {
 
   tocar(x: number, y: number): void {
     if (this.escena !== 'jugando') return;
+    // En el nivel 2 el dedo no dispara: agarra el volante.
+    if (this.conduccion) {
+      this.conduccion.tocar(x, y);
+      return;
+    }
     if (this.desdeDisparo < AJUSTES.disparo.cadencia) return;
     this.desdeDisparo = 0;
 
@@ -356,6 +426,25 @@ export class Juego {
     const objetivo = this.buscarObjetivo(x, y);
     this.anillo(x, y, objetivo !== null);
     if (objetivo) this.abatir(objetivo);
+  }
+
+  /** Arrastre del dedo. Solo lo usa el nivel 2, para girar el volante. */
+  arrastrar(x: number, y: number): void {
+    if (this.escena !== 'jugando') return;
+    this.conduccion?.arrastrar(x, y);
+  }
+
+  soltar(): void {
+    this.conduccion?.soltar();
+  }
+
+  /** Uno menos, atropellado. El equivalente de `abatir` en el nivel 2. */
+  private sumarAtropello(): void {
+    this.puntos++;
+    this.audio.acierto();
+    vibrar(AJUSTES.vibracion.acierto);
+    this.oyentes.alPuntuar(this.datos);
+    if (!this.infinito && this.puntos >= this.nivel.objetivo.cantidad) this.ganar();
   }
 
   private anillo(x: number, y: number, acierto: boolean): void {
@@ -500,15 +589,17 @@ export class Juego {
     this.reloj += dt;
     this.desdeDisparo += dt;
 
-    if (this.escena === 'jugando') {
+    if (this.escena === 'jugando' && this.conduccion) {
+      this.conduccion.actualizar(dt, this.infinito);
+    } else if (this.escena === 'jugando') {
       this.cuentaAtrasAparicion -= dt;
       const simultaneos = this.simultaneos;
       if (this.cuentaAtrasAparicion <= 0 && this.vivos < simultaneos) {
         this.aparecer();
-        if (Math.random() < this.rampa(this.nivel.dificultad.aparicionDoble) && this.vivos < simultaneos) {
+        if (Math.random() < this.rampa(this.curva.aparicionDoble) && this.vivos < simultaneos) {
           this.aparecer();
         }
-        this.cuentaAtrasAparicion = this.variar(1 / this.rampa(this.nivel.dificultad.ritmo));
+        this.cuentaAtrasAparicion = this.variar(1 / this.rampa(this.curva.ritmo));
       }
 
       for (const e of this.enemigos) {
@@ -584,6 +675,14 @@ export class Juego {
       if (t > a.inicioFundido) {
         this.oscurecer(ctx, g, Math.pow((t - a.inicioFundido) / (1 - a.inicioFundido), a.curvaFundido));
       }
+      return;
+    }
+
+    // El nivel 2 se pinta entero desde dentro del coche: calzada, monstruos,
+    // salpicadero y volante. Nada de lo de abajo le vale.
+    if (this.conduccion) {
+      this.conduccion.dibujar(ctx, this.reloj, 1);
+      if (this.fundido > 0) this.oscurecer(ctx, g, this.fundido);
       return;
     }
 

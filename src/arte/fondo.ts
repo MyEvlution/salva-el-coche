@@ -35,8 +35,13 @@ export class Fondo {
 
 /**
  * El cielo y el asfalto de un nivel, en la caja que se le diga. Lo usa el
- * fondo de la partida y tambien el hueco del porton del taller, para que lo
- * que se ve al abrirse sea exactamente la calle que viene despues.
+ * fondo de la partida, el hueco del porton del taller —para que lo que se ve
+ * al abrirse sea exactamente la calle que viene despues— y la carretera del
+ * nivel 2.
+ *
+ * `conRodadas` se apaga cuando la calzada se mueve: las rodadas van pintadas
+ * en el cache, y una calzada que se desplaza al girar el volante con unas
+ * rodadas clavadas en su sitio se nota al instante.
  */
 export function pintarCalle(
   ctx: CanvasRenderingContext2D,
@@ -45,6 +50,7 @@ export function pintarCalle(
   ancho: number,
   alto: number,
   horizonte: number,
+  conRodadas = true,
 ): void {
   const c = COLOR.escenario;
 
@@ -80,19 +86,21 @@ export function pintarCalle(
   ctx.rect(x, horizonte, ancho, fondo);
   ctx.clip();
   // Van desvanecidas: si llegan enteras al horizonte parecen focos de luz.
-  const gastado = ctx.createLinearGradient(0, horizonte, 0, y + alto);
-  gastado.addColorStop(0, c.rodadaSuave);
-  gastado.addColorStop(1, c.rodada);
-  ctx.fillStyle = gastado;
-  const centro = x + ancho / 2;
-  for (const lado of [-1, 1]) {
-    ctx.beginPath();
-    ctx.moveTo(centro + lado * ancho * 0.015, horizonte);
-    ctx.lineTo(centro + lado * ancho * 0.04, horizonte);
-    ctx.lineTo(centro + lado * ancho * 0.5, y + alto);
-    ctx.lineTo(centro + lado * ancho * 0.28, y + alto);
-    ctx.closePath();
-    ctx.fill();
+  if (conRodadas) {
+    const gastado = ctx.createLinearGradient(0, horizonte, 0, y + alto);
+    gastado.addColorStop(0, c.rodadaSuave);
+    gastado.addColorStop(1, c.rodada);
+    ctx.fillStyle = gastado;
+    const centro = x + ancho / 2;
+    for (const lado of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(centro + lado * ancho * 0.015, horizonte);
+      ctx.lineTo(centro + lado * ancho * 0.04, horizonte);
+      ctx.lineTo(centro + lado * ancho * 0.5, y + alto);
+      ctx.lineTo(centro + lado * ancho * 0.28, y + alto);
+      ctx.closePath();
+      ctx.fill();
+    }
   }
 
   // Grano: gravilla clara y picadura oscura, siempre en el mismo sitio

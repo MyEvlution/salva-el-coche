@@ -37,28 +37,78 @@ export interface CurvaDificultad {
 /** Condicion de victoria. Nuevas formas de ganar se anaden aqui. */
 export type Objetivo = { tipo: 'puntos'; cantidad: number };
 
-/** Condicion de derrota. */
-export type Derrota = { tipo: 'alcanzaObjetivoProtegido' };
+/**
+ * Condicion de derrota. `ninguna` no es un descuido: hay niveles que solo se
+ * ganan o se siguen jugando, y ponerles una derrota inventada seria peor que
+ * no tenerla.
+ */
+export type Derrota = { tipo: 'alcanzaObjetivoProtegido' } | { tipo: 'ninguna' };
 
 /** Piezas de arte que el nivel escoge. Cada valor tiene su modulo en `arte/`. */
 export type Fondo = 'carretera';
 export type Protegido = 'coche';
 export type Enemigo = 'monstruo';
 
-export interface DefinicionNivel {
+/**
+ * Como se juega el nivel. `defensa` es el nivel 1: el coche esta delante y
+ * se defiende a tiros. `conduccion` es el nivel 2: se va dentro del coche y
+ * los monstruos se atropellan.
+ *
+ * Es lo primero que se mira al montar la partida, asi que un nivel nuevo
+ * empieza por elegir uno de los dos; inventarse un tercero es escribir un
+ * motor nuevo, no un nivel.
+ */
+export type Modo = 'defensa' | 'conduccion';
+
+/** Numeros del modo conduccion. La dificultad sube con el reloj, no con los puntos. */
+export interface AjustesConduccion {
+  /** Velocidad de crucero, en avances por segundo. */
+  velocidadMaxima: number;
+  /** Segundos desde parado hasta la velocidad de crucero. */
+  rampaVelocidad: number;
+  /** Segundos en los que las rampas van de `inicio` a `fin`. */
+  rampaDificultad: number;
+  /** Apariciones por segundo. */
+  ritmo: Rampa;
+  /** Monstruos en la calzada a la vez. */
+  simultaneos: Rampa;
+  /** Variacion aleatoria aplicada a los tiempos. */
+  variacion: number;
+  /** Forma de la subida, como en `CurvaDificultad`. */
+  suavizado: number;
+  /** Segundos de margen antes del primer monstruo. */
+  respiroInicial: number;
+}
+
+interface NivelBase {
   id: string;
   nombre: string;
   /** Una linea de contexto que se muestra antes de empezar. */
   descripcion: string;
   fondo: Fondo;
-  protegido: Protegido;
   enemigo: Enemigo;
   objetivo: Objetivo;
   derrota: Derrota;
-  dificultad: CurvaDificultad;
-  /** Franja horizontal por donde asoman los enemigos, en fraccion del ancho. */
+  /**
+   * Franja por donde asoman los enemigos. En `defensa`, en fraccion del
+   * ancho de la pantalla; en `conduccion`, de la calzada: 0 es el arcen
+   * izquierdo y 1 el derecho.
+   */
   franjaAparicion: { min: number; max: number };
 }
+
+export interface NivelDefensa extends NivelBase {
+  modo: 'defensa';
+  protegido: Protegido;
+  dificultad: CurvaDificultad;
+}
+
+export interface NivelConduccion extends NivelBase {
+  modo: 'conduccion';
+  conduccion: AjustesConduccion;
+}
+
+export type DefinicionNivel = NivelDefensa | NivelConduccion;
 
 /** Estados posibles de la partida. */
 /**

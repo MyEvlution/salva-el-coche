@@ -13,6 +13,8 @@ export class Hud {
   private readonly meta: HTMLParagraphElement;
   private ultimoPuntaje = -1;
   private ultimoInfinito = false;
+  /** El objetivo tambien cambia: no es el mismo en todos los niveles. */
+  private ultimoObjetivo = -1;
 
   constructor(contenedor: HTMLElement, alPulsarPausa: () => void) {
     this.raiz = document.createElement('div');
@@ -52,9 +54,14 @@ export class Hud {
   }
 
   actualizar(datos: DatosPartida, animar: boolean): void {
-    if (datos.puntos !== this.ultimoPuntaje || datos.infinito !== this.ultimoInfinito) {
+    const cambio =
+      datos.puntos !== this.ultimoPuntaje ||
+      datos.infinito !== this.ultimoInfinito ||
+      datos.objetivo !== this.ultimoObjetivo;
+    if (cambio) {
       this.ultimoPuntaje = datos.puntos;
       this.ultimoInfinito = datos.infinito;
+      this.ultimoObjetivo = datos.objetivo;
       // Pasado el objetivo el marcador lo ensena: 101/100, 102/100...
       this.marcador.textContent = datos.infinito
         ? `${datos.puntos}/${datos.objetivo}`

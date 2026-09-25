@@ -3,9 +3,15 @@
  * poder probar en el escritorio.
  *
  * Un solo puntero a la vez: apoyar dos dedos no dispara dos veces.
+ *
+ * Hay dos gestos porque hay dos niveles: el toque suelto, que dispara, y el
+ * arrastre, que gira el volante. El nivel que no usa uno de los dos lo
+ * ignora; aqui no se sabe cual es cual.
  */
 export interface ManejadoresEntrada {
   toque(x: number, y: number): void;
+  arrastrar(x: number, y: number): void;
+  soltar(): void;
   alternarPausa(): void;
   reiniciar(): void;
 }
@@ -18,6 +24,7 @@ export class Entrada {
     private readonly manejadores: ManejadoresEntrada,
   ) {
     elemento.addEventListener('pointerdown', this.alPulsar, { passive: false });
+    elemento.addEventListener('pointermove', this.alMover, { passive: false });
     elemento.addEventListener('pointerup', this.alSoltar);
     elemento.addEventListener('pointercancel', this.alSoltar);
     elemento.addEventListener('contextmenu', this.evitar);
@@ -26,6 +33,7 @@ export class Entrada {
 
   destruir(): void {
     this.elemento.removeEventListener('pointerdown', this.alPulsar);
+    this.elemento.removeEventListener('pointermove', this.alMover);
     this.elemento.removeEventListener('pointerup', this.alSoltar);
     this.elemento.removeEventListener('pointercancel', this.alSoltar);
     this.elemento.removeEventListener('contextmenu', this.evitar);
@@ -39,12 +47,28 @@ export class Entrada {
     if (this.punteroActivo !== null) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     this.punteroActivo = e.pointerId;
+    // Con captura el arrastre sigue llegando aunque el dedo se salga del
+    // lienzo: sin esto, girar el volante hasta el borde lo deja colgado.
+    try {
+      this.elemento.setPointerCapture(e.pointerId);
+    } catch {
+      /* si el navegador no deja capturar, el gesto sigue funcionando dentro */
+    }
     const rect = this.elemento.getBoundingClientRect();
     this.manejadores.toque(e.clientX - rect.left, e.clientY - rect.top);
   };
 
+  private readonly alMover = (e: PointerEvent): void => {
+    if (this.punteroActivo !== e.pointerId) return;
+    e.preventDefault();
+    const rect = this.elemento.getBoundingClientRect();
+    this.manejadores.arrastrar(e.clientX - rect.left, e.clientY - rect.top);
+  };
+
   private readonly alSoltar = (e: PointerEvent): void => {
-    if (this.punteroActivo === e.pointerId) this.punteroActivo = null;
+    if (this.punteroActivo !== e.pointerId) return;
+    this.punteroActivo = null;
+    this.manejadores.soltar();
   };
 
   private readonly alTeclear = (e: KeyboardEvent): void => {

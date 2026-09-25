@@ -80,6 +80,82 @@ export const AJUSTES = {
     retroceso: 34,
   },
 
+  /**
+   * Nivel 2: el interior del coche. El dibujo se coloca cubriendo la
+   * pantalla y de el salen todas las medidas del nivel, asi que estos dos
+   * numeros mandan sobre la partida entera.
+   */
+  interior: {
+    /**
+     * A que altura de la pantalla cae el eje del volante cuando sobra
+     * dibujo. En vertical el dibujo entra casi justo y esto no llega a
+     * aplicarse; en apaisado manda, y por eso pasa de 1: el eje se va por
+     * debajo del borde y queda a la vista la carretera y el arco de arriba
+     * del volante, que es lo que se mira y lo que se toca.
+     */
+    ejeEnPantalla: 1.02,
+  },
+
+  /** Nivel 2: llevar el coche. */
+  conduccion: {
+    /** Donde cae el horizonte dentro del hueco del parabrisas. */
+    horizonteEnVentana: 0.42,
+    /**
+     * Cuanto baja del parabrisas el punto de avance 1, en fraccion del
+     * hueco. Lo que llega ahi ya esta tapado por el capo, que es justo lo
+     * que se ve desde el asiento al atropellar algo.
+     */
+    finBajoElCapo: 0.28,
+    /** Media calzada, en fraccion del ancho de pantalla, al llegar delante. */
+    mediaCalzada: 0.92,
+    /**
+     * Alto del monstruo al pasar por delante, en fraccion de la calzada
+     * vista. Por encima de esto uno solo tapa el parabrisas entero y deja
+     * de verse a cual conviene ir.
+     */
+    altoMonstruo: 0.62,
+
+    /** Marcas viales: lo unico que se pinta por frame en la calzada. */
+    marcas: {
+      /** Rayas de la discontinua repartidas entre el horizonte y el coche. */
+      tramos: 12,
+      /** Parte de cada tramo que esta pintada. */
+      largoRaya: 0.42,
+      /** Semianchos, en fraccion de la media calzada. */
+      anchoLinea: 0.026,
+      anchoArcen: 0.032,
+      /** Las marcas no llegan al horizonte: ahi ya no se distinguen. */
+      desdeElHorizonte: 0.012,
+    },
+
+    /** El volante: gesto, limites y vuelta al centro. */
+    volante: {
+      /** Giro maximo a cada lado, en radianes. */
+      anguloMaximo: 0.95,
+      /**
+       * Zona muerta alrededor del eje, en fraccion del radio. Con el dedo
+       * pegado al eje, un milimetro son treinta grados: ahi el gesto no se
+       * lee, se vuelve a tomar la referencia.
+       */
+      zonaMuerta: 0.22,
+      /** Vuelta al centro al soltar, en veces por segundo. */
+      autocentrado: 4.5,
+      /** Suavizado del giro: quita el temblor del dedo sin dar retraso. */
+      suavizado: 22,
+    },
+
+    /**
+     * Cuanto se desplaza el coche a lo ancho de la calzada por segundo, a
+     * tope de giro y a tope de velocidad. Parado no gira: el volante de un
+     * coche quieto tampoco lo mueve.
+     */
+    giro: 1.05,
+    /** Medio ancho del parachoques, en unidades de calzada. */
+    margenAtropello: 0.16,
+    /** Sacudida del atropello: fuerza en pixeles y cuanto tarda en pasarse. */
+    golpe: { fuerza: 16, amortiguacion: 9 },
+  },
+
   /** Proyeccion pseudo-3D: los monstruos convergen hacia el coche. */
   proyeccion: {
     curva: 1.7, // exponente: de lejos avanzan despacio, de cerca se echan encima
@@ -123,7 +199,15 @@ export const AJUSTES = {
    * necesita un suelo. Por debajo de este recorrido el monstruo cruza antes
    * de que de tiempo a verlo, asi que no es dificultad: es una pantalla rota.
    */
-  infinito: { recorridoMinimo: 1.2 },
+  infinito: {
+    recorridoMinimo: 1.2,
+    /**
+     * Techo de la velocidad en conduccion, en veces la del nivel. Sin el,
+     * la rampa extrapolada acaba cruzando la calzada en una decima: eso ya
+     * no es dificil, es que no se ve.
+     */
+    marchaMaxima: 2.4,
+  },
 
   /**
    * Apertura del porton al darle a jugar: el taller se abre y la pantalla se

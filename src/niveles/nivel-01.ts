@@ -1,4 +1,4 @@
-import type { DefinicionNivel } from '../motor/tipos';
+import type { NivelDefensa } from '../motor/tipos';
 
 /**
  * Nivel 1 — La carretera.
@@ -6,11 +6,12 @@ import type { DefinicionNivel } from '../motor/tipos';
  * Solo datos: el motor los lee y monta la partida. Para anadir un nivel nuevo
  * se copia este archivo, se cambian los numeros y se registra en `indice.ts`.
  */
-export const NIVEL_01: DefinicionNivel = {
+export const NIVEL_01: NivelDefensa = {
   id: 'nivel-01',
   nombre: 'La carretera',
   descripcion: 'Los monstruos del oxido quieren comerse tu coche. Un disparo, un monstruo.',
 
+  modo: 'defensa',
   fondo: 'carretera',
   protegido: 'coche',
   enemigo: 'monstruo',

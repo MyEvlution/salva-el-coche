@@ -113,6 +113,12 @@ export const COLOR = {
     manguera: '#2F7BD0',
   },
 
+  /** Marcas viales del nivel 2. Pintura gastada, no blanco de rotulador. */
+  conduccion: {
+    linea: 'rgba(228, 233, 234, 0.72)',
+    arcen: 'rgba(228, 233, 234, 0.46)',
+  },
+
   efectos: {
     fogonazo: '255, 244, 214',
     trazador: '255, 168, 96',

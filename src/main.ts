@@ -41,6 +41,8 @@ juego = new Juego(lienzo, PRIMER_NIVEL, audio, {
 
 new Entrada(canvas, {
   toque: (x, y) => juego.tocar(x, y),
+  arrastrar: (x, y) => juego.arrastrar(x, y),
+  soltar: () => juego.soltar(),
   alternarPausa: () => juego.alternarPausa(),
   reiniciar: () => {
     if (juego.escenaActual !== 'jugando') juego.reiniciar();
