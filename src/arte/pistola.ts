@@ -80,8 +80,10 @@ export class Pistola {
     );
     // La esquina de abajo a la derecha se sale un poco de la pantalla: en
     // primera persona la mano tiene que entrar por el borde, no flotar.
-    this.pivoteX = ancho * p.anclaX - (DIBUJO.ancho - PIVOTE.x) * this.escala;
-    this.pivoteY = alto * p.anclaY - (DIBUJO.alto - PIVOTE.y) * this.escala;
+    const derecha = ancho + DIBUJO.ancho * p.desbordeX * this.escala;
+    const abajo = alto + DIBUJO.alto * p.desbordeY * this.escala;
+    this.pivoteX = derecha - (DIBUJO.ancho - PIVOTE.x) * this.escala;
+    this.pivoteY = abajo - (DIBUJO.alto - PIVOTE.y) * this.escala;
     this.dpr = dpr;
     this.pintar();
   }

@@ -102,6 +102,10 @@ nunca se hace es meter en el motor una constante de un nivel.
 - **Las dos imagenes se reducen una sola vez** a un canvas del tamano bueno y
   por frame solo se copian. Filtrar una imagen de 1000 px en cada frame
   disparaba el p95 de 17 a 93 ms; cacheada vuelve a 21.
+- **La pistola se ancla por su esquina inferior derecha**, y lo que se sale
+  de la pantalla se mide en fraccion del propio dibujo (`desbordeX`,
+  `desbordeY`), no de la pantalla: en fraccion de pantalla asomaba lo justo
+  en un movil y se iba casi entera en una pantalla ancha.
 - **La pistola ya no finge el escorzo**: la perspectiva viene en el dibujo.
   El modulo solo la coloca, la gira un poco hacia donde se toca y dice donde
   cae la punta del canon (`PUNTA`), que es de donde salen el fogonazo y el

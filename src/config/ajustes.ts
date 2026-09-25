@@ -32,11 +32,16 @@ export const AJUSTES = {
    */
   pistola: {
     /** Parte del ancho de la pantalla que ocupa el dibujo... */
-    anchoRelativo: 0.56,
+    anchoRelativo: 0.476,
     /** ...y del alto, que es lo que manda en apaisado. */
-    altoRelativo: 0.6,
-    anclaX: 1,
-    anclaY: 1.05,
+    altoRelativo: 0.51,
+    /**
+     * Cuanto se sale el dibujo por la derecha y por abajo, en fraccion del
+     * propio dibujo y no de la pantalla: asi asoma igual en un movil
+     * estrecho que en una pantalla ancha.
+     */
+    desbordeX: 0.17,
+    desbordeY: 0.2,
     /** Cuanto se inclina la pistola hacia el punto tocado: 1 = apunta del todo. */
     seguimiento: 0.55,
     /** Pixeles de retroceso al disparar, en unidades del dibujo. */
